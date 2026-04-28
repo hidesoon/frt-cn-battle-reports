@@ -1310,10 +1310,17 @@
 </div>
 
 <div class="card" style="margin-top:14px; background: rgba(255,209,102,.06); border-color: rgba(255,209,102,.3)">
-  <h3 class="gold" style="margin-top:0">⚡ 口径修正:Zirnitra 的高伤害主要不是舰船伤害</h3>
-  <p>20 个 FRT Zirnitra 飞行员总伤害 <b>7.87M</b>,但其中 <b>7.77M</b> 打在结构/部署物上,对舰船只有 <b>98.9K</b>。人均拆开后是:总伤害 <b>393,619</b> / 对舰船 <b class="loss">4,943</b> / 对结构部署物 <b class="win">388,676</b>。</p>
+  <h3 class="gold" style="margin-top:0">⚡ 口径修正:多个高总伤舰种,实际打的不是舰船</h3>
+
+  <h4 style="color:var(--frt); margin: 10px 0 4px; font-size: 14px;">🛡️ 守方 · 泽尼塔级 Zirnitra (FRT 阵营)</h4>
+  <p>20 个 Zirnitra 总伤害 <b>7.87M</b>,但其中 <b>7.77M</b> 打在结构/部署物上,对舰船只有 <b>98.9K</b>。人均拆:总 <b>393,619</b> / 对舰船 <b class="loss">4,943</b> / 对结构 <b class="win">388,676</b>。</p>
   <p>更精确地说 — Zirnitra 全程<b>焊在 4-HWWF 外部泡泡阵以及 B-9 星城上刷无效输出</b>,主目标是大型机动跃迁扰断器 I/II(anchor bubbles):WarBeacon 明细里 Zirnitra 对大型泡泡造成 7.77M 伤害,拿到 42 个大型泡泡 final blow。<b>输出最高的那艘 znt 单艘打了 ~1M 伤害,击杀 23 个大型机动跃迁扰断器</b>。所以本场 Zirnitra 更像"清泡泡 / 反 anchor"工具,<b>不能按总伤害直接评为跨阵营火力王</b>。</p>
-  <p class="sub" style="margin-top:8px;border-top:1px dashed rgba(255,209,102,.2);padding-top:8px">📣 口径修正感谢 <b style="color:var(--frt)">FUXI-冰月冰月冰 / Fr0zenmn</b> (FUXI 管理员)提醒。</p>
+
+  <h4 style="color:var(--gsf); margin: 14px 0 4px; font-size: 14px;">⚔️ 攻方 · 送葬者级海军型 Exequror NI (Imperium 阵营)</h4>
+  <p>14 个攻方 ENI 总伤害 <b>2.29M</b>,但其中 <b>2.17M</b> 也是打在结构/部署物上,对舰船只有 <b>118K</b>。人均拆:总 <b>163,420</b> / 对舰船 <b class="loss">8,467</b> / 对结构 <b class="win">154,952</b>。</p>
+  <p>送葬者级海军型本是后勤巡洋(Logi),但本场 Imperium 给它装了导弹/无人机做"<b>结构刷子</b>" — 直接刷 4-HWWF 星城本体的护盾/装甲血量,顶 Keepstar reinforce timer 进度。<b>对攻方来说这是"有效战略输出"</b>(实际推 timer 让结构 RF),但<b>对单船战斗力评估来说不算 anti-ship 火力</b>。同样性质的还有银鹰级 (114K/人结构伤) / 渎圣级 / 截击舰 / 鹏鲲级,本场 Imperium 大量刷点击星城本体 — 这是攻方在"硬磨"结构的指标,不是杀船能力。</p>
+
+  <p class="sub" style="margin-top:10px;border-top:1px dashed rgba(255,209,102,.2);padding-top:8px">📣 口径修正感谢 <b style="color:var(--frt)">FUXI-冰月冰月冰 / Fr0zenmn</b> 提醒(Zirnitra 焊外部泡泡 / B-9 星城刷伤害)以及对送葬者级海军型角色的指正。</p>
 </div>
 
 <div class="grid g2" style="margin-top:14px">
@@ -1489,6 +1496,16 @@
 </div>
 
 <h2>📔 战场私记 — 作者亲历</h2>
+
+<figure class="hero-shot">
+  <img src="assets/keepstar-shield.png" alt="星城肉山盾爆裂瞬间" loading="lazy">
+  <figcaption>
+    <span class="hs-tag">⚓ KEEPSTAR · 23:0X BJT</span>
+    <span class="hs-text">星城肉山盾爆发瞬间 — 蓝色脉冲撕裂空间,所有外部 anchor bubbles 一并殒灭</span>
+    <span class="hs-credit">📷 摄于战场:<b style="color:var(--frt)">FUXI-无渊 / Jan Richter</b></span>
+  </figcaption>
+</figure>
+
 <div class="diary-card">
   <div class="diary-corner top-left"></div>
   <div class="diary-corner top-right"></div>
@@ -1507,6 +1524,50 @@
     <span>artist D · 2026-04-28 BJT 23:0X · 4-HWWF</span>
   </div>
 </div>
+
+<style>
+  .hero-shot {
+    margin: 18px 0 14px;
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(102,178,255,.3);
+    box-shadow: 0 0 0 1px var(--bg) inset, 0 4px 30px rgba(102,178,255,.08);
+    position: relative;
+    background: var(--bg);
+  }
+  .hero-shot::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--gold) 70%, transparent);
+    z-index: 2; opacity: .5;
+  }
+  .hero-shot img {
+    display: block; width: 100%; height: auto;
+    object-fit: cover;
+    max-height: 480px;
+  }
+  .hero-shot figcaption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 22px 22px 16px;
+    background: linear-gradient(180deg, transparent, rgba(11,14,20,.55) 30%, rgba(11,14,20,.95) 100%);
+    color: var(--text);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .hs-tag {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 11px; letter-spacing: .15em;
+    color: var(--gold); font-weight: 700;
+  }
+  .hs-text { font-size: 14px; color: #d8dde7; }
+  .hs-credit {
+    font-size: 12px; color: var(--muted);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(255,255,255,.1);
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    letter-spacing: .03em;
+  }
+</style>
 
 <style>
   .diary-card {
