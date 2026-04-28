@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H-5GUI 战报 · 2026-04-19 · WinterCo 军团简报</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #121721;
+    --panel-2: #181e2b;
+    --border: #222b3d;
+    --text: #d8dde7;
+    --muted: #7a8497;
+    --accent: #66b2ff;
+    --loss: #ff6b6b;
+    --win: #7bd88f;
+    --warn: #ffc857;
+    --frt: #ff8a3d;
+    --gsf: #c777ff;
+  }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    margin: 0; line-height: 1.6; font-size: 15px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 18px; margin-bottom: 26px; }
+  .tag { display:inline-block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  h1 { margin: 6px 0 6px; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
+  h2 { margin: 34px 0 12px; font-size: 19px; font-weight: 600; border-left: 3px solid var(--accent); padding-left: 10px; }
+  h3 { margin: 22px 0 8px; font-size: 16px; font-weight: 600; color: var(--text); }
+  .sub { color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  p { margin: 8px 0; }
+  blockquote {
+    border-left: 3px solid var(--accent); margin: 8px 0; padding: 4px 12px;
+    background: #161c28; color: var(--text); font-size: 14px;
+  }
+  blockquote .who { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .tl-dr {
+    background: linear-gradient(180deg, #1a2030, #141a28);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; margin: 14px 0 10px;
+  }
+  .tl-dr h3 { margin-top: 0; color: var(--warn); font-size: 14px; letter-spacing: .05em; text-transform: uppercase; }
+  .grid { display: grid; gap: 12px; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card .k { color: var(--muted); font-size: 12px; letter-spacing:.04em; text-transform: uppercase; }
+  .card .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .card .v.loss { color: var(--loss); }
+  .card .v.win { color: var(--win); }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .frt { color: var(--frt); font-weight: 600; }
+  .gsf { color: var(--gsf); font-weight: 600; }
+  .loss { color: var(--loss); }
+  .win { color: var(--win); }
+  .warn { color: var(--warn); }
+  .mu { color: var(--muted); }
+  .timeline { position: relative; margin: 10px 0 6px; padding-left: 18px; }
+  .timeline::before {
+    content:""; position: absolute; left: 6px; top: 4px; bottom: 4px;
+    width: 2px; background: var(--border);
+  }
+  .tl-row { position: relative; padding: 6px 0 6px 16px; }
+  .tl-row::before {
+    content:""; position: absolute; left: -4px; top: 12px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+  }
+  .tl-row.loss::before { background: var(--loss); }
+  .tl-row.win::before { background: var(--win); }
+  .tl-row.warn::before { background: var(--warn); }
+  .tl-time { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .tl-time .utc { color: #556070; font-size: 11px; margin-left: 4px; }
+  .tl-title { font-weight: 600; }
+  ul { padding-left: 18px; }
+  li { margin: 4px 0; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    background: #22304a; color: var(--text); font-size: 12px; margin-right: 4px;
+  }
+  .verdict {
+    background: #2a1a1a; border: 1px solid #6b2d2d; color: #ffd2cc;
+    padding: 14px 18px; border-radius: 10px;
+  }
+  .verdict strong { color: var(--loss); }
+  .verdict.action {
+    background: #2a2618; border-color: #6b5a2d; color: #ffecc4;
+  }
+  .verdict.action strong { color: var(--warn); }
+  .tz-note {
+    background: #161c28; border-left: 3px solid var(--accent);
+    padding: 8px 12px; margin: 10px 0; font-size: 13px; color: var(--muted);
+  }
+  .tz-note b { color: var(--text); }
+  footer {
+    margin-top: 40px; border-top: 1px solid var(--border); padding-top: 16px;
+    color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 720px) {
+    .g4 { grid-template-columns: 1fr 1fr; }
+    .g2 { grid-template-columns: 1fr; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="tag">战斗简报 · AAR · 内部流通</div>
+  <h1>H-5GUI 主力会战 — WinterCo × Goons/INIT</h1>
+  <div class="sub">2026-04-19 · 静默谷 (Vale of the Silent) · 主战场 H-5GUI · 持续 2h 55m · 帝国宣战第 14 天</div>
+</header>
+
+<div class="tz-note">
+  🕐 <b>时间约定</b>:本简报所有时间默认 <b>BJT (北京时间 / UTC+8)</b>,方便 CN 线员阅读。部分关键节点括号内同时标注 <span class="mu">(EVE/UTC)</span>。
+</div>
+
+<div class="tl-dr">
+  <h3>TL;DR — 三行看完</h3>
+  <p><strong>这不是单一 timer 防御战,是帝国 4-5 宣战后持续消耗战中的一场 escalation 会战。</strong> 我们主动连起 <b>4 个舰队(CFI → 乌鸦 → MOTD → M3)</b> 接帝国 battleship fleet,守住 H-5GUI 战场。</p>
+  <p><strong class="loss">硬件账很难看</strong>:17 海军无畏 + 2 无畏 + 3 Rorq 没了,对面只赔了 1 艘 Minokawa。一次失败的 cap escalation。</p>
+  <p><strong class="warn">真正的 timer 在今天晚上 17:00-21:00 BJT</strong> — H-5GUI IHub <b>armor 窗口 BJT 17:00→21:00 (UTC 09:00→13:00)</b>,Keepstar 健在但 IHub 还 reinforced。昨晚是 timer 前的前哨战,<b>晚上才是主战</b>。</p>
+</div>
+
+<h2>为什么打这一场 — 战争背景</h2>
+<p>
+  要放在 <b>2026-04-05 帝国宣战</b>的大框架里看。
+</p>
+
+<blockquote>
+  <div class="who">#bulletin-公告栏 · 2026-04-05 · noraus</div>
+  "帝国正式发布了战争宣言。<b>超过两千条旗舰超期正在 K-I 等待进入对舞</b>。他们的首要目标非常明确是<b>摧毁对舞的 BWF 星城</b>并且在东对舞建立长期锚地。"
+</blockquote>
+
+<blockquote>
+  <div class="who">#bulletin-公告栏 · 2026-04-07 · noraus (战后 PING)</div>
+  "一场酣畅淋漓的胜利之后......FC 和你们中的一些人连续坚守了 31 个小时......<b>Keepstar 本该被击毁,我们为所有可能情况都做了准备,因此击毁 Keepstar 本就是理所应得的结果</b>......不像 M2- 那样,这场战斗并没有改变整体格局。我们仍然被现存三大超级势力中的两个围攻。"
+</blockquote>
+
+<p>
+  宣战以来的走势:
+</p>
+<ul>
+  <li><b>04-05</b>: 帝国正式宣战,K-I 集结 2000+ titans,第一目标 BWF 星城</li>
+  <li><b>04-07</b>: FRT 打出关键胜利,毁掉帝国一座 Keepstar + 困住对方超旗</li>
+  <li><b>04-12</b>: M3 死亡漩涡(Maelstrom Mk3)正式纳入 B-9 建制</li>
+  <li><b>04-18</b>: B-9C / 4-HWWF 方向,与 <b>The Initiative.</b> 战列舰队多轮接战</li>
+  <li><b>04-19 今晨</b>: H-5GUI 打了一场主力会战(本简报)</li>
+  <li><b>04-19 今晚</b>: <b>H-5GUI IHub armor 窗口 17:00-21:00 BJT</b> — 下一场真正的 timer</li>
+</ul>
+
+<p><b>语境</b>:我们现在同时面对 <b>Imperium(蜜蜂 Goons)</b> 和 <b>INIT(The Initiative.)</b> 两条战线。今晨 H-5GUI 不是单纯 timer 事件,而是帝国 escalation 试图掏空我们 cap 储备、为晚上 IHub armor 窗口清战场的一环。</p>
+
+<h2>我们在 H-5GUI 有什么结构</h2>
+<table>
+  <tr><th>结构</th><th>状态 (查询时间 2026-04-19 12:40 BJT)</th><th>下一事件</th></tr>
+  <tr>
+    <td><b>Infrastructure Hub</b><br><span class="sub">Fraternity Building Management</span></td>
+    <td class="loss"><b>Reinforced (Invulnerable)</b><br><span class="sub">ADM 4.5x / 45m</span></td>
+    <td class="warn"><b>今晚 17:00-21:00 BJT</b><br><span class="sub">= 09:00-13:00 UTC · 4h armor 脆弱窗口<br>就是真正的 timer</span></td>
+  </tr>
+  <tr>
+    <td><b>Keepstar</b><br><span class="sub">Fraternity.</span></td>
+    <td class="win">在场开火<br><span class="sub">点防御/DD 输出 2.0m 伤害 / 102 次参战</span></td>
+    <td>无公开 timer 显示<br><span class="sub">结构健康,未进 reinforced</span></td>
+  </tr>
+</table>
+<p class="sub">数据源:Dotlan (IHub)、WarBeacon 伤害榜 (Keepstar 开火记录)、zKillboard (结构未出现在 KM 列表)。</p>
+
+<h2>战场规模</h2>
+<div class="grid g4">
+  <div class="card"><div class="k">参战人数</div><div class="v">1,941</div><div class="sub">WinterCo 898 · 帝国方 1,043</div></div>
+  <div class="card"><div class="k">总船损</div><div class="v">1,537</div><div class="sub">我方 559 · 对面 978</div></div>
+  <div class="card"><div class="k">总 ISK</div><div class="v loss">375.8b</div><div class="sub">我方 187.1b · 对面 188.8b</div></div>
+  <div class="card"><div class="k">持续时间</div><div class="v">2h 55m</div><div class="sub">08:52 → 11:47 BJT</div></div>
+</div>
+
+<h2>双方阵容</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3 class="frt">我方 · WinterCo + PanFam</h3>
+    <table>
+      <tr><th>联盟</th><th class="num">人数</th></tr>
+      <tr><td><b>Fraternity.</b></td><td class="num">648</td></tr>
+      <tr><td>Pandemic Legion</td><td class="num">76</td></tr>
+      <tr><td>Test Alliance Please Ignore</td><td class="num">76</td></tr>
+      <tr><td>Northern Coalition.</td><td class="num">51</td></tr>
+      <tr><td>Blades of Grass</td><td class="num">15</td></tr>
+      <tr><td>Solyaris Chtonium · Insidious</td><td class="num">23</td></tr>
+    </table>
+    <p class="sub">主阵:<b>Maelstrom</b> ×422 · <b>Raven</b> ×124 · <b>CFI</b> ×101 · <b>RNI</b> ×45 — 风暴 alpha + 鱼雷/巡航补 DPS。</p>
+  </div>
+  <div class="card">
+    <h3 class="gsf">对面 · Imperium + INIT</h3>
+    <table>
+      <tr><th>联盟</th><th class="num">人数</th></tr>
+      <tr><td><b>Goonswarm Federation</b> (蜜蜂)</td><td class="num">633</td></tr>
+      <tr><td>Brave Collective</td><td class="num">82</td></tr>
+      <tr><td>Dracarys.</td><td class="num">71</td></tr>
+      <tr><td>Sigma Grindset</td><td class="num">61</td></tr>
+      <tr><td>Out of the Blue.</td><td class="num">58</td></tr>
+      <tr><td>Fraternity Auxiliary · SONS of BANE</td><td class="num">47</td></tr>
+    </table>
+    <p class="sub">主阵:<b>Maelstrom</b> ×327 · <b>RNI</b> ×170 · <b>CFI</b> ×70 · <b>Jackdaw</b> ×66 — 几乎镜像 doctrine,Jackdaw 屏蔽更重。</p>
+  </div>
+</div>
+
+<h2>指挥响应 — FC 起队时间线 (BJT)</h2>
+<p>
+  基于 <code>#strat-战略起队</code> 原始 ping 还原。括号内是 EVE (UTC) 时间。
+</p>
+<div class="timeline">
+  <div class="tl-row"><div class="tl-time">08:44:45 <span class="utc">(00:44 UTC)</span></div><div class="tl-title">EN CFI 队起</div><div class="sub">SARD-Jack098991: "去 EN 的 CFI 队,舰队名 <b>for all mankind</b>,catherine harrington 的舰队,cn mumble fleet1"</div></div>
+  <div class="tl-row warn"><div class="tl-time">08:52:14 <span class="utc">(00:52 UTC)</span></div><div class="tl-title">首接触 — 8TPX-N</div><div class="sub">CFI 队与对面 HIC/先头部队对轰,首血一艘 Eris 被秒。</div></div>
+  <div class="tl-row"><div class="tl-time">09:34:14 <span class="utc">(01:34 UTC)</span></div><div class="tl-title">二队起 — 对面升级</div><div class="sub">noraus: "对方有想继续升级,我们组织了第二个队伍。<b>killer nomad 是 fc</b>"。NC+WC 联合乌鸦。</div></div>
+  <div class="tl-row"><div class="tl-time">09:47:35 <span class="utc">(01:47 UTC)</span></div><div class="tl-title">全员进组 — 乌鸦</div><div class="sub">瓜瓜: "@everyone 现在所有醒了的人去 fleet 02 开乌鸦"</div></div>
+  <div class="tl-row warn"><div class="tl-time">09:56:42 <span class="utc">(01:56 UTC)</span></div><div class="tl-title">H-5GUI 接战开始</div><div class="sub">noraus: <b>"h-5 接战了,进 killer Nomad 队伍 NCWC fleet 2 语音,乌鸦"</b>。Keepstar 开始提供火力支援。</div></div>
+  <div class="tl-row loss"><div class="tl-time">10:00 – 10:05 <span class="utc">(02:00-02:05 UTC)</span></div><div class="tl-title loss">Cap escalation — 首批海军无畏被秒</div><div class="sub">我方掉无畏反打,5 分钟内连爆 3 艘海军无畏(~20b)。HIC 网格未清干净。</div></div>
+  <div class="tl-row"><div class="tl-time">10:02:57 <span class="utc">(02:02 UTC)</span></div><div class="tl-title">三队起 — ChefAce MOTD / 死亡漩涡</div><div class="sub">瓜瓜: "二队满了,进三队 fleet03 ChefAce 的舰队"。noraus: "这是第三队。死亡漩涡"。</div></div>
+  <div class="tl-row loss"><div class="tl-time">10:05 – 10:45 <span class="utc">(02:05-02:45 UTC)</span></div><div class="tl-title loss">无畏被持续屠宰 — 40 分钟 14 艘</div><div class="sub">5× Rev Navy、6× Moros Navy、4× Phoenix Navy + 1× Naglfar + 1× Phoenix。<b>每 2.5 分钟爆一艘 7b 的无畏</b>。</div></div>
+  <div class="tl-row"><div class="tl-time">10:22:18 <span class="utc">(02:22 UTC)</span></div><div class="tl-title">noraus 喊 M3 补人</div><div class="sub">"继续来如果你死了 就进之前的字重新投送进去。现在 m3 最需要人"</div></div>
+  <div class="tl-row"><div class="tl-time">10:45:52 <span class="utc">(02:45 UTC)</span></div><div class="tl-title">四队起 — Nour Samy M3</div><div class="sub">Nour Samy: "<b>Fleet four is up on Nour Samy, WC Fleet 4 EN Mumble, 4-H formup, More Maelstrom M3</b>"</div></div>
+  <div class="tl-row win"><div class="tl-time">11:19:24 <span class="utc">(03:19 UTC)</span></div><div class="tl-title win">唯一 cap-tier 战果</div><div class="sub">对面 1 艘 Minokawa FAX 被秒(7.2b)。</div></div>
+  <div class="tl-row loss"><div class="tl-time">11:44 – 11:45 <span class="utc">(03:44-03:45 UTC)</span></div><div class="tl-title loss">收尾又丢 2 艘 Rorqual</div><div class="sub">末期脱离失败,Rorq 被抓。</div></div>
+  <div class="tl-row"><div class="tl-time">11:47:22 <span class="utc">(03:47 UTC)</span></div><div class="tl-title">战斗结束</div><div class="sub">对面主力撤场,我方稳定 H-5GUI 战场;<b>结构无一爆炸</b>。</div></div>
+</div>
+
+<h2>硬件账(H-5GUI 单场)</h2>
+<table>
+  <tr><th>项目</th><th class="num frt">我方 (FRT 主)</th><th class="num gsf">对面 (GSF 主)</th></tr>
+  <tr><td>船损艘数</td><td class="num">349</td><td class="num">608</td></tr>
+  <tr><td>船损 ISK</td><td class="num loss">163.5b</td><td class="num">146.5b</td></tr>
+  <tr><td>主力舰 (cap) 损失</td><td class="num loss"><b>20 艘</b><br><span class="sub">17× Navy Dread · 2× Dread · 3× Rorqual</span></td><td class="num">1 艘<br><span class="sub">1× Minokawa FAX</span></td></tr>
+  <tr><td>单船均价</td><td class="num">~470M</td><td class="num">~240M</td></tr>
+  <tr><td>效率(WarBeacon)</td><td class="num">46.0%</td><td class="num">54.0%</td></tr>
+</table>
+<p class="sub">效率数字基于亚系列权重,<b>没有反映 cap 级屠杀</b>。对面用低成本亚系列换我方海军无畏,才是这场真正的胜负手。</p>
+
+<h2>结论</h2>
+<div class="verdict">
+  <p><strong>硬件层面:帝国拿下战术胜利。战场结构层面:我方守住阵地。</strong></p>
+  <ul style="margin-top:8px;">
+    <li><b>已确定</b>:对面用亚系列消耗钓 cap,~130b cap 硬件 vs 对面 1 FAX,纯 ISK PnL 是帝国大胜。</li>
+    <li><b>已确定</b>:H-5GUI 的 Keepstar 和 IHub 都没有爆(IHub 进场前就已 reinforced)。</li>
+    <li><b>已确定</b>:3 小时内起了 <b>4 个舰队</b>(CFI → Raven → MOTD → M3),没让帝国占场。这是指挥层面的成功。</li>
+    <li><b>未确定(今晚 21:00 BJT 后才能盖棺)</b>:IHub armor 窗口(17:00-21:00 BJT)能不能守住。</li>
+  </ul>
+  <p style="margin-top:10px;">
+    换句话说:<b>这场战斗我们输了硬件,但守住了战场和士气</b>。130b cap 的价值要靠今晚 17:00 的 armor 窗口去兑现——守住 IHub,这场消耗就成立;守不住,就是白赔。
+  </p>
+</div>
+
+<h2>🔔 今晚行动 — 17:00 BJT IHub armor 窗口</h2>
+<div class="verdict action">
+  <p><strong>H-5GUI IHub armor 窗口: 2026-04-19 17:00 → 21:00 BJT <span class="mu">(09:00-13:00 UTC)</span></strong></p>
+  <p>
+    <b>这是这场对抗的真正 timer</b>。今晨 130b cap 损失只有在这个窗口守住的情况下才有意义。
+  </p>
+  <p>
+    时段对 +8 时区玩家非常友好——晚饭前上线,晚上黄金时段决战,凌晨前收工。请所有在线 pilot <b>关注 <code>#strat-战略起队</code> 的 ping</b>。cap 掉投等 FC 明确信号 + HIC 网格清完再下去(参考下面的复盘要点)。
+  </p>
+</div>
+
+<h2>复盘要点</h2>
+<ul>
+  <li><b>Cap escalation 的时机和 HIC 清网</b>:17 艘 Navy 无畏连爆说明首波掉 cap 时 HIC bubble 没清干净。下次掉 cap 前 HIC 清网、pilot brief "不能拔就自毁别让对面爽"必须更严。</li>
+  <li><b>海军无畏的战术权重要重估</b>:17 艘 Navy dread 贡献了我方近 60% 的 ISK 损失。同样的结果如果用 T1 无畏(价格一半),至少省 50b。下次 timer 掉 T1 堆量、Navy 留做关键 alpha 更划算。</li>
+  <li><b>Rorqual 不该在战场尾段出现</b>:11:44/11:45 BJT 又丢两艘 Rorq 属于脱离管理问题。战斗尾声必须有专门 bubble 清场 + 专人负责全员 jump out。</li>
+  <li><b>对面 doctrine 已经 mirror 我们</b>:Maelstrom + RNI + CFI,差别只在 Jackdaw 屏蔽更重。下次要么增 webifier support、要么主炮射程拉开——纯对轰在他们主场不占优。</li>
+  <li><b>4 个舰队滚动起队的 SOP 很成功</b>:三小时内 CFI → 乌鸦 → MOTD → M3,把每个 TZ 和每个技能档次的 pilot 都用上了。损失虽惨,但没让对面无人对抗地推进。这个 escalation SOP 要归档成 playbook。</li>
+</ul>
+
+<h2>感谢</h2>
+<p>
+  感谢 <b>catherine harrington · killer nomad · ChefAce · Nour Samy</b> 四位 FC 连续起队;感谢 10:00 BJT 点名掉 cap 的舰长、当晨到场的 648 名 FRT 线员,以及 PL / TEST / NC. 的盟友支援。Noraus 4-7 PING 里那句"<b>无论成功还是失败,你们都是亲身经历的主角</b>"——今晚 17:00 BJT,armor 窗口见。
+</p>
+
+<footer>
+  数据源:<a href="https://warbeacon.net/br/report/a71228e1-0697-4cfb-bbe2-0e97b1c4d9f8" target="_blank" rel="noopener">WarBeacon 战报</a> · Dotlan H-5GUI · FRT CN Discord(#strat-战略起队 / #bulletin-公告栏 / #这被打了！) · 时间默认 BJT (北京时间/UTC+8) · 本简报仅供军团内部流通。
+</footer>
+
+</div>
+</body>
+</html>

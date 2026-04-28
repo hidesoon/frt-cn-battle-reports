@@ -1,0 +1,1857 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4-HWWF 老星城落幕战 · 2026-04-28 · FRT × Imperium</title>
+<style>
+  :root {
+    --bg: #090c12;
+    --panel: #111722;
+    --panel-2: #171e2b;
+    --panel-3: #0f141d;
+    --border: #263142;
+    --text: #dbe2ec;
+    --muted: #8b95a7;
+    --accent: #66b2ff;
+    --loss: #ff6b6b;
+    --win: #7bd88f;
+    --warn: #ffc857;
+    --frt: #ff8a3d;
+    --gsf: #c777ff;
+    --gold: #ffd166;
+    --tier: #b18cff;
+  }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    margin: 0; line-height: 1.65; font-size: 15px;
+    overflow-x: hidden;
+  }
+
+  /* === 视差星空背景 === */
+  .starfield {
+    position: fixed; inset: 0; z-index: -1;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(102,178,255,.05), transparent 50%),
+      radial-gradient(ellipse at 80% 60%, rgba(255,209,102,.04), transparent 50%),
+      var(--bg);
+    pointer-events: none;
+  }
+  .starfield canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* === 头部光带 === */
+  header {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255,209,102,.08), rgba(17,23,34,.68) 58%, rgba(9,12,18,.2)),
+      linear-gradient(90deg, rgba(255,138,61,.08), rgba(102,178,255,.04), rgba(199,119,255,.08));
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 8px;
+    padding: 28px 26px 24px !important;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  header::before {
+    content: ""; position: absolute; top: 0; left: -50%; right: -50%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 50%, transparent);
+    opacity: .5;
+  }
+  header::after {
+    content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);
+  }
+
+  /* === 滚动渐入动画 === */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+    transition: opacity .65s cubic-bezier(.2,.7,.2,1), transform .65s cubic-bezier(.2,.7,.2,1), filter .5s ease-out;
+    will-change: opacity, transform, filter;
+  }
+  .reveal.in {
+    opacity: 1; transform: translateY(0); filter: blur(0);
+  }
+
+  /* === 卡片悬停 === */
+  .card, .doc-card, .chart-grid, .verdict, blockquote {
+    transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+  }
+  .card:hover, .doc-card:hover, .chart-grid:hover {
+    border-color: rgba(102,178,255,.4);
+    box-shadow: 0 4px 24px rgba(102,178,255,.06), 0 0 0 1px rgba(102,178,255,.1) inset;
+    transform: translateY(-1px);
+  }
+  .verdict:hover { box-shadow: 0 4px 24px rgba(123,216,143,.08); }
+  blockquote.signal:hover { box-shadow: 0 0 24px rgba(255,209,102,.08); }
+
+  /* === 时间线节点悬停 === */
+  .tl-row {
+    transition: background .2s ease, padding-left .25s ease;
+    border-radius: 6px;
+  }
+  .tl-row:hover {
+    background: rgba(102,178,255,.04);
+    padding-left: 22px !important;
+  }
+  .tl-row::before {
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .tl-row:hover::before {
+    transform: scale(1.4);
+    box-shadow: 0 0 0 6px rgba(102,178,255,.12);
+  }
+  .tl-row.crit:hover::before {
+    box-shadow: 0 0 0 6px rgba(255,209,102,.2);
+  }
+  .tl-row.loss:hover::before {
+    box-shadow: 0 0 0 6px rgba(255,107,107,.18);
+  }
+  .tl-row.win:hover::before {
+    box-shadow: 0 0 0 6px rgba(123,216,143,.18);
+  }
+
+  /* === 进度条加载动画 === */
+  .bar-fielded, .bar-lost {
+    width: 0 !important;
+    transition: width 1.2s cubic-bezier(.2,.7,.2,1);
+  }
+  .chart-row.bar-in .bar-fielded { width: var(--w-fielded, 0) !important; }
+  .chart-row.bar-in .bar-lost { width: var(--w-lost, 0) !important; }
+  .bar-num { opacity: 0; transition: opacity .4s ease .8s; }
+  .chart-row.bar-in .bar-num { opacity: 1; }
+
+  /* === 数字呼吸 (TL;DR 关键数字) === */
+  .epitaph .dates {
+    text-shadow: 0 0 30px rgba(255,209,102,.15);
+  }
+
+  /* === 舰船图标 === */
+  .ship-icon {
+    display: inline-block; width: 28px; height: 28px; vertical-align: middle;
+    margin-right: 6px; border-radius: 4px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    transition: transform .25s ease, border-color .25s ease;
+  }
+  .chart-row:hover .ship-icon {
+    transform: scale(1.15) rotate(-3deg);
+    border-color: rgba(102,178,255,.4);
+  }
+  .chart-row .ship { display: flex; align-items: center; gap: 4px; }
+  .chart-row .ship .name-text { display: flex; flex-direction: column; line-height: 1.25; }
+  .chart-row .ship .en { margin-left: 0 !important; }
+
+  /* === 章节滚动锚定指示 === */
+  h2 { position: relative; }
+  h2:hover { color: var(--accent); transition: color .3s ease; }
+
+  /* === 顶部进度条 === */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 100;
+    background: linear-gradient(90deg, var(--gold), var(--accent));
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    transition: transform .1s linear;
+  }
+
+  /* prefers-reduced-motion 兼容 */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+    .bar-fielded, .bar-lost { transition: none; }
+    .ship-icon { transition: none; }
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; position: relative; z-index: 1; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 18px; margin-bottom: 26px; }
+  .tag { display:inline-block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .tag.crit { color: var(--gold); }
+  h1 { margin: 8px 0 8px; font-size: clamp(28px, 4vw, 44px); line-height: 1.08; font-weight: 760; letter-spacing: 0; max-width: 860px; }
+  h2 { margin: 40px 0 14px; font-size: 20px; font-weight: 650; border-left: 3px solid var(--accent); padding-left: 10px; }
+  h3 { margin: 22px 0 8px; font-size: 16px; font-weight: 600; }
+  .tier-h {
+    margin: 22px 0 6px; font-size: 13px; font-weight: 700;
+    color: var(--tier); letter-spacing: .08em; text-transform: uppercase;
+    border-bottom: 1px dashed rgba(177,140,255,.3); padding-bottom: 4px;
+  }
+  .sub { color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  p { margin: 8px 0; }
+  blockquote {
+    border-left: 3px solid var(--accent); margin: 10px 0; padding: 8px 14px;
+    background: #161c28; color: var(--text); font-size: 14px;
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote .who { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  blockquote.signal { border-left-color: var(--gold); background: linear-gradient(180deg, #1d1a12, #161c28); }
+  blockquote.signal .who { color: var(--gold); }
+  .tl-dr {
+    background: linear-gradient(180deg, #1a2030, #141a28);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; margin: 14px 0 10px;
+  }
+  .tl-dr h3 { margin-top: 0; color: var(--warn); font-size: 14px; letter-spacing: .05em; text-transform: uppercase; }
+  .grid { display: grid; gap: 12px; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .card {
+    background: linear-gradient(180deg, rgba(23,30,43,.96), rgba(17,23,34,.96));
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card .k { color: var(--muted); font-size: 12px; letter-spacing:.04em; text-transform: uppercase; }
+  .card .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .card .v.loss { color: var(--loss); }
+  .card .v.win { color: var(--win); }
+  .card .v.gold { color: var(--gold); }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 10px; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(38,49,66,.75); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  tr:hover td { background: rgba(255,255,255,.025); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .frt { color: var(--frt); font-weight: 600; }
+  .gsf { color: var(--gsf); font-weight: 600; }
+  .loss { color: var(--loss); }
+  .win { color: var(--win); }
+  .warn { color: var(--warn); }
+  .gold { color: var(--gold); }
+  .mu { color: var(--muted); }
+
+  /* Doctrine bar charts */
+  .chart-grid { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; }
+  .chart-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 70px;
+    gap: 10px; align-items: center;
+    padding: 5px 0; font-size: 13px;
+  }
+  .chart-row .ship { font-weight: 600; }
+  .chart-row .ship .en { color: var(--muted); font-size: 11px; margin-left: 4px; }
+  .chart-row .meta { color: var(--muted); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .barcell { position: relative; height: 22px; }
+  .bar-fielded {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: rgba(102,178,255,.25);
+    border: 1px solid rgba(102,178,255,.5);
+    border-radius: 4px;
+  }
+  .bar-lost {
+    position: absolute; top: 0; left: 0; height: 100%;
+    border-radius: 4px;
+  }
+  .bar-lost.l-low { background: rgba(123,216,143,.6); }
+  .bar-lost.l-med { background: rgba(255,200,87,.65); }
+  .bar-lost.l-high { background: rgba(255,107,107,.75); }
+  .bar-lost.l-extreme { background: rgba(255,107,107,.95); }
+  .bar-num {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: var(--text); font-size: 11px; font-weight: 600;
+    padding: 0 6px; pointer-events: none;
+    text-shadow: 0 0 3px rgba(0,0,0,.6);
+  }
+  .legend {
+    display: flex; gap: 14px; align-items: center;
+    color: var(--muted); font-size: 12px; margin-bottom: 8px;
+  }
+  .legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+  .legend i.f { background: rgba(102,178,255,.25); border: 1px solid rgba(102,178,255,.5); }
+  .legend i.l1 { background: rgba(123,216,143,.6); }
+  .legend i.l2 { background: rgba(255,200,87,.65); }
+  .legend i.l3 { background: rgba(255,107,107,.75); }
+  .legend i.l4 { background: rgba(255,107,107,.95); }
+
+  .timeline { position: relative; margin: 10px 0 6px; padding-left: 18px; }
+  .timeline::before {
+    content:""; position: absolute; left: 6px; top: 4px; bottom: 4px;
+    width: 2px; background: var(--border);
+  }
+  .tl-row { position: relative; padding: 6px 0 6px 16px; }
+  .tl-row::before {
+    content:""; position: absolute; left: -4px; top: 12px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+  }
+  .tl-row.loss::before { background: var(--loss); }
+  .tl-row.win::before { background: var(--win); }
+  .tl-row.warn::before { background: var(--warn); }
+  .tl-row.crit::before { background: var(--gold); box-shadow: 0 0 0 4px rgba(255,209,102,.15); }
+  .tl-time { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .tl-title { font-weight: 600; }
+  .tl-row.crit .tl-title { color: var(--gold); }
+  ul { padding-left: 18px; }
+  li { margin: 4px 0; }
+  .verdict {
+    background: #142318; border: 1px solid #2d6b3a; color: #cce8d2;
+    padding: 14px 18px; border-radius: 8px;
+  }
+  .verdict strong { color: var(--win); }
+  .verdict.action {
+    background: #2a2618; border-color: #6b5a2d; color: #ffecc4;
+  }
+  .verdict.action strong { color: var(--warn); }
+  .tz-note {
+    background: rgba(17,23,34,.92); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    padding: 10px 12px; margin: 12px 0; font-size: 13px; color: var(--muted); border-radius: 0 8px 8px 0;
+  }
+  .tz-note b { color: var(--text); }
+  .epitaph {
+    text-align: center; padding: 22px 18px; margin: 18px 0;
+    background: linear-gradient(180deg, rgba(255,209,102,.09), rgba(17,23,34,.72));
+    border: 1px solid rgba(255,209,102,.25); border-radius: 8px;
+  }
+  .epitaph .dates {
+    font-size: 22px; font-weight: 700; color: var(--gold);
+    letter-spacing: .04em; font-variant-numeric: tabular-nums;
+  }
+  .epitaph .name { color: var(--text); font-size: 15px; margin-top: 4px; }
+  .epitaph .desc { color: var(--muted); font-size: 13px; margin-top: 8px; line-height: 1.5; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .fit-detail {
+    background: #161c28; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; margin: 6px 0; font-size: 12px; color: var(--muted);
+  }
+  .fit-detail b { color: var(--text); }
+
+  /* === 进攻 / 防守 / 短板 总结卡片 === */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin: 14px 0;
+  }
+  .sum-card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; position: relative; overflow: hidden;
+  }
+  .sum-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    opacity: .6;
+  }
+  .sum-card.attack { color: var(--loss); }
+  .sum-card.defend { color: var(--win); }
+  .sum-card.weak { color: var(--warn); }
+  .sum-card h4 {
+    margin: 0 0 10px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    color: currentColor;
+  }
+  .sum-card .body { color: var(--text); font-size: 14px; }
+  .sum-card .body ul { margin: 4px 0 0 0; padding-left: 16px; }
+  .sum-card .body li { margin: 6px 0; line-height: 1.5; }
+  .sum-card .body b { color: currentColor; }
+  .sum-card .side-tag {
+    display: inline-block; padding: 1px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+    margin-right: 6px;
+  }
+  .sum-card .side-tag.frt { background: rgba(255,138,61,.15); color: var(--frt); }
+  .sum-card .side-tag.gsf { background: rgba(199,119,255,.15); color: var(--gsf); }
+  @media (max-width: 720px) {
+    .summary-grid { grid-template-columns: 1fr; }
+  }
+
+  .header-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 14px;
+  }
+  .meta-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 28px; padding: 3px 10px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 8px;
+    background: rgba(9,12,18,.32);
+    color: var(--text);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta-chip b { color: var(--gold); font-weight: 700; }
+  .report-nav {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin: 14px 0 18px;
+  }
+  .report-nav a {
+    display: block; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: rgba(17,23,34,.78);
+    color: var(--text);
+    font-size: 13px; font-weight: 650;
+  }
+  .report-nav a span { display: block; color: var(--muted); font-size: 11px; font-weight: 500; margin-top: 2px; }
+  .report-nav a:hover { text-decoration: none; border-color: rgba(102,178,255,.5); background: rgba(22,31,45,.95); }
+  .analysis-card {
+    background: linear-gradient(180deg, rgba(23,30,43,.98), rgba(11,15,22,.96));
+  }
+  .analysis-card h3 {
+    font-size: 15px; letter-spacing: .02em;
+  }
+  .analysis-card table th:first-child,
+  .analysis-card table td:first-child { min-width: 132px; }
+  @media (max-width: 720px) {
+    .report-nav { grid-template-columns: 1fr 1fr; }
+    header { padding: 22px 18px !important; }
+    .meta-chip { width: 100%; justify-content: space-between; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+  }
+
+  footer {
+    margin-top: 40px; border-top: 1px solid var(--border); padding-top: 16px;
+    color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 720px) {
+    .g4 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: 1fr; }
+    .g2 { grid-template-columns: 1fr; }
+    .chart-row { grid-template-columns: 130px 1fr 60px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="starfield"><canvas id="stars"></canvas></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="wrap">
+
+<header>
+  <div class="header-top">
+    <div class="header-text">
+      <div class="tag crit">Battle Report · AAR · 4-HWWF Keepstar Final Timer</div>
+      <h1>4-HWWF 老星城落幕战 — 不求成功,但求成仁</h1>
+      <div class="header-meta" aria-label="battle metadata">
+        <span class="meta-chip">Date <b>2026-04-28</b></span>
+        <span class="meta-chip">Region <b>绝地之域 / Delve</b></span>
+        <span class="meta-chip">System <b>4-HWWF</b></span>
+        <span class="meta-chip">Duration <b>8h 57m</b></span>
+        <span class="meta-chip">Pilots <b>11,089</b></span>
+        <span class="meta-chip">War Day <b>24</b></span>
+      </div>
+    </div>
+    <div class="header-author">
+      <img class="ha-portrait" src="https://images.evetech.net/characters/716283942/portrait?size=128" alt="artist D" loading="lazy">
+      <div class="ha-info">
+        <div class="ha-name">artist D</div>
+        <div class="ha-org">
+          <img src="https://images.evetech.net/corporations/98185110/logo?size=32" alt="FUXI">
+          <span>FUXI</span>
+          <span class="ha-sep">·</span>
+          <img src="https://images.evetech.net/alliances/99003581/logo?size=32" alt="FRT">
+          <span>FRT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  /* 标题块独占一行 */
+  .header-top {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .header-text { flex: 1; min-width: 0; }
+
+  /* 作者条 — 标题下方独立一行,横向布局 */
+  .header-author {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255,209,102,.18);
+    align-self: flex-start;
+  }
+  .ha-portrait {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(255,209,102,.45);
+    box-shadow: 0 0 8px rgba(255,209,102,.1);
+    flex-shrink: 0;
+  }
+  .ha-info {
+    line-height: 1.3;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ha-name {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    letter-spacing: .005em;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+  }
+  .ha-org {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--muted);
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    letter-spacing: .06em;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+  }
+  .ha-org img {
+    width: 14px; height: 14px; border-radius: 2px;
+    background: rgba(255,255,255,.04);
+  }
+  .ha-sep { opacity: .35; margin: 0 1px; }
+  @media (max-width: 720px) {
+    .ha-info { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .ha-org { padding-left: 0; border-left: none; }
+  }
+</style>
+
+<div class="tz-note">
+  <b>口径约定</b>:本简报所有时间统一使用 <b>北京时间 (BJT / UTC+8)</b>。系统、星域、星座保持 TQ 英文原名;中文舰船名仅作阅读辅助,统计以 WarBeacon / zKillboard 的 TQ type_id 为准。
+</div>
+
+<nav class="report-nav" aria-label="report sections">
+  <a href="#battle-overview">战场概览<span>人数、ISK、时间线</span></a>
+  <a href="#doctrine-analysis">制式表现<span>部署、损失、存活</span></a>
+  <a href="#damage-analysis">伤害拆分<span>建筑 vs 舰船</span></a>
+  <a href="#action-plan">下次调整<span>SOP 与反隐轰</span></a>
+</nav>
+
+<div class="epitaph">
+  <div class="dates">2021.2.3 — 2026.4.28</div>
+  <div class="name">4-HWWF · WinterCo. Central Station (星城)</div>
+  <div class="desc">"老星城托举这个联盟和他的成员变成更有经验更资历的集体。"<br>—— noraus, 2026-04-28 22:43 BJT</div>
+</div>
+
+<div class="tl-dr">
+  <h3>TL;DR — 三行看完</h3>
+  <p><strong class="gold">这是一场预知结局的体面落幕战。</strong> 04-25 装甲增强失守那天起,FRT 就清楚老星城守不住了。04-27 魔兽 PING 战前动员: "<i>也许星城会掉、也许我们整建制会覆灭,但我们会一直开火,不求成功、但求成仁</i>"。这场仗的胜负标准从来不是"保住星城",是 <b>对方付多少代价</b> + <b>我们的成员有多团结</b>。</p>
+  <p><strong class="loss">FRT 同日丢两座 Keepstar:</strong> 上午 B-9 战场以 1 打 4 的劣势死磕,最后 B-9 星城被磨掉;下午 4-HWWF 老星城 final timer 殒落于 23:02 BJT。Imperium 为这两座结构付出 ~3,800 隐轰 (损 ~92%) + 461.8b ISK 亚 cap。</p>
+  <p><strong class="warn">下次要补的是 SOP 不是 doctrine。</strong> 战列舰 / 海军战列舰 / 海军无畏舰 / 航空母舰 / 超级航母 五个等级损失率都低于 1%(航母 + 超航 + 海军无畏共 405 艘只损 3 艘),需要补强的是: ① 反隐轰中队部署 ② 帕拉丁级 (Paladin) bastion 模式必须重新评估(本场 9 艘损失最重) ③ 星城殒落后 5 分钟内 cap 必须 jump out 的 SOP 没执行 ④ ECM 70km 站位等点防纪律继续打磨。</p>
+</div>
+
+<h2>战前定调 — 这是登记在册的 final timer</h2>
+
+<blockquote class="signal">
+  <div class="who">#bulletin-公告栏 · 2026-04-27 08:59 BJT · 魔兽/Greed jf cyno · 战前动员</div>
+  "上周六(<b>4月25日</b>),4H 装甲防御战失败了!此战我们输了... 这次的失利,是短板的暴露,更是我们不断变强的阶梯... <b>4月28日,下午13点开始,再来一场酣畅淋漓的战斗,再来一场没有遗憾的战斗、再来一场载入史册的战斗</b>。 ... <b>也许星城会掉、也许我们整建制会覆灭,但我们会一直开火、一直添油、一直开火,直到弹尽粮绝、直到最后一刻!</b>"
+</blockquote>
+
+<blockquote class="signal">
+  <div class="who">#bulletin-公告栏 · 2026-04-28 17:09 BJT · noraus · 战斗号令</div>
+  "@everyone <b>让这些人和 4H 星城陪葬</b>。感谢 FC、后勤、市场、公司管理、每个关心的朋友,<b>抱歉我的顶层错误让 4H 星城受损,但是感谢你们陪我玩到她的终点</b>。现在开火!"
+</blockquote>
+
+<blockquote class="signal">
+  <div class="who">#strat-战略起队 · 2026-04-28 20:45 BJT · noraus · B-9 失守战报</div>
+  "<b>B9 星城刚刚炸掉,我们的舰队 1 打 4 把对方杀完了,INIT 把银鹰散开当狂怒用,最后星城磨掉,对方终于进了超期</b>,感谢我的 B9 朋友们。<br>现在我们专心 4HW,<b>我们杀了 1500 个隐轰,对方还有 890 个</b>!"
+</blockquote>
+
+<p>这是 <b>FRT 同日两座 Keepstar 接连失守</b>的双战场战。B-9 星城上午先丢(FRT 在 1:4 兵力劣势下战至最后),下午全员压到 4-HWWF 打 final timer。<b>这场仗的赢的标准不是"保结构",是"让对方付出尽可能高的代价、让团队问心无愧"</b>。</p>
+
+<h2 id="battle-overview">战场概览</h2>
+<div class="grid g4">
+  <div class="card"><div class="k">参战人数</div><div class="v">11,089</div><div class="sub">FRT 4,160 · 攻方 6,929</div></div>
+  <div class="card"><div class="k">总船损</div><div class="v">12,887</div><div class="sub">FRT 1,269 · 攻方 11,378</div></div>
+  <div class="card"><div class="k">总 ISK</div><div class="v loss">791b</div><div class="sub">FRT 315b(含 KS) · 攻方 462b</div></div>
+  <div class="card"><div class="k">持续时间</div><div class="v">8h 57m</div><div class="sub">15:03 → 24:00 BJT</div></div>
+</div>
+
+<h2>双方阵容</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3 class="frt">守方 · FRT</h3>
+    <p class="sub">4,160 人 · 1,269 船损 · 315b ISK(含 4-HWWF 星城 180.5b)</p>
+    <table>
+      <tr><th>联盟</th><th class="num">人数</th></tr>
+      <tr><td><b>Fraternity. (FRT 主体)</b></td><td class="num">3,208</td></tr>
+      <tr><td>北部联盟 (NC.) · 大流行军团 (PL) · TEST 友军</td><td class="num">425</td></tr>
+      <tr><td>Insidious. · F.A.X · SLYCE · SYN(WC 同盟)</td><td class="num">397</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3 class="gsf">攻方 · Imperium (蜜蜂阵线)</h3>
+    <p class="sub">6,929 人 · 11,378 船损 · 461.8b ISK</p>
+    <table>
+      <tr><th>联盟</th><th class="num">人数</th></tr>
+      <tr><td><b>Goonswarm Federation (蜜蜂)</b></td><td class="num">3,432</td></tr>
+      <tr><td>The Initiative. (INIT)</td><td class="num">1,535</td></tr>
+      <tr><td>Dracarys.</td><td class="num">717</td></tr>
+      <tr><td>Brave · Sigma · IGC · Fanatic · SOB</td><td class="num">771</td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>FC 起队 + 战术广播 (BJT)</h2>
+<div class="timeline">
+  <div class="tl-row warn"><div class="tl-time">04-27 08:59</div><div class="tl-title warn">魔兽战前动员 — "周二下午 13 点见"</div><div class="sub">FRT HD 大魔兽公开 04-25 装甲战失败原因,号召 04-28 13:00 BJT 全员上线。"<b>不求成功、但求成仁</b>"。</div></div>
+  <div class="tl-row crit"><div class="tl-time">17:09</div><div class="tl-title">⚜️ noraus 战斗号令</div><div class="sub">"<b>让这些人和 4H 星城陪葬</b>... 抱歉我的顶层错误让 4H 星城受损,但是感谢你们陪我玩到她的终点。现在开火!"</div></div>
+  <div class="tl-row"><div class="tl-time">15:03</div><div class="tl-title">8 系统多线接战</div><div class="sub">Imperium 跨区桥接进入 4-HWWF / 8TPX-N / YMJG-4 等系统。</div></div>
+  <div class="tl-row"><div class="tl-time">19:38</div><div class="tl-title">H-U-G FC 起 X47 队</div><div class="sub">Kudaliar Beddelver: "X47 Fleet" — 多线作战开始。</div></div>
+  <div class="tl-row"><div class="tl-time">19:40</div><div class="tl-title">noraus: 守 B-9 队</div><div class="sub">"FC flexchumbucket 这个人的舰队 去守护最好的 B9!"</div></div>
+  <div class="tl-row"><div class="tl-time">19:51</div><div class="tl-title">Ezio Harry SOTG</div><div class="sub">"@everyone <b>你在 4-HW 上线了就开始杀敌对,加油</b>"</div></div>
+  <div class="tl-row loss"><div class="tl-time">~20:45</div><div class="tl-title loss">⚓ B-9 星城殒落 — FRT 第 1 座 Keepstar 损失</div><div class="sub">noraus: "<b>B9 星城刚刚炸掉,我们的舰队 1 打 4 把对方杀完了,INIT 把银鹰散开当狂怒用</b>... 现在我们专心 4HW"。FRT 死磕到最后一刻。</div></div>
+  <div class="tl-row warn"><div class="tl-time">20:59</div><div class="tl-title warn">noraus 战术广播 — ECM 距离</div><div class="sub">"<b>如果你完全明白 ECM 脉冲的机制,你需要停止 ECM,你现在应该拉的离星城越远越好。超过 70KM 再开。</b>"</div></div>
+  <div class="tl-row warn"><div class="tl-time">22:11</div><div class="tl-title warn">FRTBM Doc 紧急广播 — 站内旗舰下线</div><div class="sub">"如果你现在在 4-H 老星城站内,你现在应该即刻下线,否则<b>星城爆的时候你会被直接弹进太空里,尤其是老星城站内的旗舰</b>"</div></div>
+  <div class="tl-row crit"><div class="tl-time">22:19</div><div class="tl-title">⚡ MAX CTA "海灾"队起 — Qxlt4 14</div><div class="sub">"FC: <b>Qxlt4 14</b> · 舰队名: <b>海灾</b> · 等级: <b>极限全员集结 (MAX CTA)</b> · 集结点: 4-HWWF WinterCo. Central Station (星城) · CN Mumble Fleet 01 · 起队时间: 立刻"</div></div>
+  <div class="tl-row crit"><div class="tl-time">22:40</div><div class="tl-title">Ezio Harry: 老星城晚安</div><div class="sub">"今天大家都很好的完成了联盟安排的任务... <b>我们做到了我们的最好,新战术,新安排,更高效的指挥和更有素质的成员,问心无愧了</b>... <b>让我们和 4-HWWF 主星城说声晚安</b>"</div></div>
+  <div class="tl-row crit"><div class="tl-time">22:43</div><div class="tl-title">⚜️ noraus 墓志铭</div><div class="sub">"<b>2021.2.3 - 2026.4.28 老星城托举这个联盟和他的成员变成更有经验更资历的集体</b>"</div></div>
+  <div class="tl-row loss"><div class="tl-time">23:02:57</div><div class="tl-title loss">⚓ 4-HWWF 老星城殒落 — FRT 第 2 座 Keepstar (180.55b · 2,787 攻击者)</div><div class="sub">最后一击:Goon Hound (猎犬级). 主伤害 ~37% 来自隐形轰炸机群 (净化级 / 猎犬级 / 蝎尾怪级 / 纳美西斯级)。</div></div>
+  <div class="tl-row loss"><div class="tl-time">23:06 → 23:50</div><div class="tl-title loss">尾声 cap 撤离失败</div><div class="sub">神示级海军型 (RNI Dread, 7b · 222 攻击者)、莫洛级海军型 (Moros NI, 6.3b · 373 攻击者)、2× 神示级 (Rev)、4× 帕拉丁级 (Paladin) 接连损失。<b>站内 logoff 旗舰被弹出后被锁</b>。</div></div>
+  <div class="tl-row warn"><div class="tl-time">23:19</div><div class="tl-title warn">SARD 收尾广播</div><div class="sub">"如果你在星城上无法跳走,请<b>停止开火吃星城驻留并尝试安全下线</b>"</div></div>
+  <div class="tl-row"><div class="tl-time">04-29 01:20</div><div class="tl-title">欧时区反收割队 — Jubah</div><div class="sub">SG.CN 小蔡: "FC: jubah · 舰队名: WC HD 欧时区 · 本地防御队"。Final timer 后继续骚扰 Imperium 撤退。</div></div>
+</div>
+
+<h2 id="doctrine-analysis">制式效果分析(按舰船等级展示)</h2>
+<p>每个等级独立成图。蓝色边框 = 部署人数,实心色块 = 损失数量(绿=低损失/黄=中等/红=高损失)。数据全部基于 <a href="https://warbeacon.net/br/report/e8c7c91f-4530-4e9b-ad07-d0b786990a87" target="_blank">WarBeacon 战报</a>。</p>
+
+<div class="legend"><span><i class="f"></i>部署</span><span><i class="l1"></i>损失 &lt; 10%</span><span><i class="l2"></i>10-30%</span><span><i class="l3"></i>30-70%</span><span><i class="l4"></i>&gt; 70%</span></div>
+
+<h3 class="frt">🛡️ FRT 阵营 — 各等级表现 (按总伤害排序)</h3>
+<div class="tier-h">无畏舰 · 部署 327 · 损 5 (1.5%) · 总伤 37.0M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/73790/icon?size=64" alt="神示级海军型" loading="lazy"><span class="name-text"><b>神示级海军型</b><span class="en">Revelation Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/73790/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="50%"></div><div class="bar-num" style="left: 50%">伤 11.6M · 部署 103 / 损 1 · 人均 113K · FB 262</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/73792/icon?size=64" alt="莫洛级海军型" loading="lazy"><span class="name-text"><b>莫洛级海军型</b><span class="en">Moros Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/73792/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="84%"></div><div class="bar-lost l-low" data-w="50%"></div><div class="bar-num" style="left: 50%">伤 9.8M · 部署 79 / 损 1 · 人均 124K · FB 249</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/52907/icon?size=64" alt="泽尼塔级" loading="lazy"><span class="name-text"><b>泽尼塔级</b><span class="en">Zirnitra · <a href="https://zkillboard.com/system/30000240/ship/52907/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="68%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 7.9M · 部署 20 / 损 0 · 人均 394K · FB 45</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/19720/icon?size=64" alt="神示级" loading="lazy"><span class="name-text"><b>神示级</b><span class="en">Revelation · T1 · <a href="https://zkillboard.com/system/30000240/ship/19720/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="29%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 31%">伤 3.4M · 部署 57 / 损 2 · 人均 60K · FB 88</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/19724/icon?size=64" alt="莫洛级" loading="lazy"><span class="name-text"><b>莫洛级</b><span class="en">Moros · T1 · <a href="https://zkillboard.com/system/30000240/ship/19724/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="11%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 13%">伤 1.3M · 部署 13 / 损 0 · 人均 98K · FB 34</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/73787/icon?size=64" alt="纳迦法级舰队型" loading="lazy"><span class="name-text"><b>纳迦法级舰队型</b><span class="en">Naglfar Fleet Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/73787/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="9%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 11%">伤 1.1M · 部署 9 / 损 0 · 人均 122K · FB 84</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/19722/icon?size=64" alt="纳迦法级" loading="lazy"><span class="name-text"><b>纳迦法级</b><span class="en">Naglfar · <a href="https://zkillboard.com/system/30000240/ship/19722/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="7%"></div><div class="bar-lost l-med" data-w="50%"></div><div class="bar-num" style="left: 9%">伤 0.8M · 部署 10 / 损 1 · 人均 85K · FB 60</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/73793/icon?size=64" alt="凤凰级海军型" loading="lazy"><span class="name-text"><b>凤凰级海军型</b><span class="en">Phoenix Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/73793/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="6%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 8%">伤 0.7M · 部署 29 / 损 0 · 人均 23K · FB 69</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/19726/icon?size=64" alt="凤凰级" loading="lazy"><span class="name-text"><b>凤凰级</b><span class="en">Phoenix · T1 · <a href="https://zkillboard.com/system/30000240/ship/19726/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="4%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 6%">伤 0.4M · 部署 7 / 损 0 · 人均 59K · FB 16</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">超级航母 · 部署 106 · 损 0 (0.0%) · 总伤 6.0M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22852/icon?size=64" alt="冥府级" loading="lazy"><span class="name-text"><b>冥府级</b><span class="en">Hel · <a href="https://zkillboard.com/system/30000240/ship/22852/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 2.5M · 部署 30 / 损 0 · 人均 82K · FB 123</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23913/icon?size=64" alt="夜神级" loading="lazy"><span class="name-text"><b>夜神级</b><span class="en">Nyx · T1 · <a href="https://zkillboard.com/system/30000240/ship/23913/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="75%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 1.8M · 部署 30 / 损 0 · 人均 62K · FB 70</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23919/icon?size=64" alt="万古级" loading="lazy"><span class="name-text"><b>万古级</b><span class="en">Aeon · <a href="https://zkillboard.com/system/30000240/ship/23919/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="47%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 49%">伤 1.1M · 部署 30 / 损 0 · 人均 38K · FB 59</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23917/icon?size=64" alt="飞龙级" loading="lazy"><span class="name-text"><b>飞龙级</b><span class="en">Wyvern · <a href="https://zkillboard.com/system/30000240/ship/23917/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="17%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 19%">伤 0.4M · 部署 13 / 损 0 · 人均 33K · FB 28</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/42125/icon?size=64" alt="仇恨级" loading="lazy"><span class="name-text"><b>仇恨级</b><span class="en">Vendetta · 海军 · <a href="https://zkillboard.com/system/30000240/ship/42125/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="6%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 8%">伤 0.2M · 部署 3 / 损 0 · 人均 52K · FB 3</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">航空母舰 · 部署 82 · 损 1 (1.2%) · 总伤 3.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23911/icon?size=64" alt="绝念级" loading="lazy"><span class="name-text"><b>绝念级</b><span class="en">Thanatos · <a href="https://zkillboard.com/system/30000240/ship/23911/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 1.6M · 部署 33 / 损 0 · 人均 50K · FB 107</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23757/icon?size=64" alt="执政官级" loading="lazy"><span class="name-text"><b>执政官级</b><span class="en">Archon · <a href="https://zkillboard.com/system/30000240/ship/23757/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="47%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 49%">伤 0.8M · 部署 20 / 损 1 · 人均 38K · FB 50</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24483/icon?size=64" alt="尼铎格尔级" loading="lazy"><span class="name-text"><b>尼铎格尔级</b><span class="en">Nidhoggur · <a href="https://zkillboard.com/system/30000240/ship/24483/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="43%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 45%">伤 0.7M · 部署 19 / 损 0 · 人均 38K · FB 52</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/23915/icon?size=64" alt="奇美拉级" loading="lazy"><span class="name-text"><b>奇美拉级</b><span class="en">Chimera · <a href="https://zkillboard.com/system/30000240/ship/23915/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="7%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 9%">伤 0.1M · 部署 10 / 损 0 · 人均 12K · FB 13</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">掠夺舰 · 部署 179 · 损 13 (7.3%) · 总伤 5.6M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/28659/icon?size=64" alt="帕拉丁级" loading="lazy"><span class="name-text"><b>帕拉丁级</b><span class="en">Paladin · T2 · <a href="https://zkillboard.com/system/30000240/ship/28659/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 3.8M · 部署 133 / 损 9 · 人均 29K · FB 479</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/28665/icon?size=64" alt="恶狼级" loading="lazy"><span class="name-text"><b>恶狼级</b><span class="en">Vargur · T2 · <a href="https://zkillboard.com/system/30000240/ship/28665/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="28%"></div><div class="bar-lost l-med" data-w="33%"></div><div class="bar-num" style="left: 30%">伤 1.1M · 部署 22 / 损 3 · 人均 49K · FB 147</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/28661/icon?size=64" alt="克洛诺斯级" loading="lazy"><span class="name-text"><b>克洛诺斯级</b><span class="en">Kronos · T2 · <a href="https://zkillboard.com/system/30000240/ship/28661/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="15%"></div><div class="bar-lost l-low" data-w="11%"></div><div class="bar-num" style="left: 17%">伤 0.6M · 部署 15 / 损 1 · 人均 37K · FB 49</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/28710/icon?size=64" alt="魔像级" loading="lazy"><span class="name-text"><b>魔像级</b><span class="en">Golem · T2 · <a href="https://zkillboard.com/system/30000240/ship/28710/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="5%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 7%">伤 0.2M · 部署 9 / 损 0 · 人均 22K · FB 10</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">战列舰 · 部署 1163 · 损 47 (4.0%) · 总伤 20.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24688/icon?size=64" alt="鹏鲲级" loading="lazy"><span class="name-text"><b>鹏鲲级</b><span class="en">Rokh · <a href="https://zkillboard.com/system/30000240/ship/24688/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 7.6M · 部署 521 / 损 21 · 人均 15K · FB 504</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/17726/icon?size=64" alt="灾难级海军型" loading="lazy"><span class="name-text"><b>灾难级海军型</b><span class="en">Apocalypse Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/17726/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="83%"></div><div class="bar-lost l-low" data-w="14%"></div><div class="bar-num" style="left: 50%">伤 6.3M · 部署 186 / 损 3 · 人均 34K · FB 507</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/17732/icon?size=64" alt="狂暴级舰队型" loading="lazy"><span class="name-text"><b>狂暴级舰队型</b><span class="en">Tempest Fleet Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/17732/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="41%"></div><div class="bar-lost l-low" data-w="38%"></div><div class="bar-num" style="left: 43%">伤 3.1M · 部署 210 / 损 8 · 人均 15K · FB 347</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/642/icon?size=64" alt="灾难级" loading="lazy"><span class="name-text"><b>灾难级</b><span class="en">Apocalypse · T1 · <a href="https://zkillboard.com/system/30000240/ship/642/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="19%"></div><div class="bar-lost l-low" data-w="19%"></div><div class="bar-num" style="left: 21%">伤 1.5M · 部署 56 / 损 4 · 人均 26K · FB 156</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24694/icon?size=64" alt="死亡漩涡级" loading="lazy"><span class="name-text"><b>死亡漩涡级</b><span class="en">Maelstrom · <a href="https://zkillboard.com/system/30000240/ship/24694/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="11%"></div><div class="bar-lost l-low" data-w="29%"></div><div class="bar-num" style="left: 13%">伤 0.9M · 部署 149 / 损 6 · 人均 6K · FB 113</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/33820/icon?size=64" alt="巴盖斯级" loading="lazy"><span class="name-text"><b>巴盖斯级</b><span class="en">Barghest · 海军 · <a href="https://zkillboard.com/system/30000240/ship/33820/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="3%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 5%">伤 0.2M · 部署 3 / 损 0 · 人均 71K · FB 16</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24692/icon?size=64" alt="地狱天使级" loading="lazy"><span class="name-text"><b>地狱天使级</b><span class="en">Abaddon · <a href="https://zkillboard.com/system/30000240/ship/24692/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="3%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 5%">伤 0.2M · 部署 2 / 损 0 · 人均 100K · FB 21</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/645/icon?size=64" alt="多米尼克斯级" loading="lazy"><span class="name-text"><b>多米尼克斯级</b><span class="en">Dominix · T1 · <a href="https://zkillboard.com/system/30000240/ship/645/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="2%"></div><div class="bar-lost l-low" data-w="5%"></div><div class="bar-num" style="left: 4%">伤 0.2M · 部署 13 / 损 1 · 人均 13K · FB 19</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/638/icon?size=64" alt="乌鸦级" loading="lazy"><span class="name-text"><b>乌鸦级</b><span class="en">Raven · T1 · <a href="https://zkillboard.com/system/30000240/ship/638/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="2%"></div><div class="bar-lost l-med" data-w="14%"></div><div class="bar-num" style="left: 4%">伤 0.2M · 部署 19 / 损 3 · 人均 8K · FB 16</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/47466/icon?size=64" alt="实践级" loading="lazy"><span class="name-text"><b>实践级</b><span class="en">Praxis · <a href="https://zkillboard.com/system/30000240/ship/47466/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="2%"></div><div class="bar-lost l-med" data-w="5%"></div><div class="bar-num" style="left: 4%">伤 0.1M · 部署 4 / 损 1 · 人均 31K · FB 51</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">战斗战列巡洋舰 · 部署 410 · 损 63 (15.4%) · 总伤 4.9M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/16227/icon?size=64" alt="猛鲑级" loading="lazy"><span class="name-text"><b>猛鲑级</b><span class="en">Ferox · T1 · <a href="https://zkillboard.com/system/30000240/ship/16227/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="70%"></div><div class="bar-num" style="left: 50%">伤 2.4M · 部署 322 / 损 23 · 人均 7K · FB 597</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24702/icon?size=64" alt="暴风级" loading="lazy"><span class="name-text"><b>暴风级</b><span class="en">Hurricane · T1 · <a href="https://zkillboard.com/system/30000240/ship/24702/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="55%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 1.3M · 部署 33 / 损 33 · 人均 40K · FB 74</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/49711/icon?size=64" alt="德雷卡瓦级" loading="lazy"><span class="name-text"><b>德雷卡瓦级</b><span class="en">Drekavac · <a href="https://zkillboard.com/system/30000240/ship/49711/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="12%"></div><div class="bar-lost l-high" data-w="3%"></div><div class="bar-num" style="left: 14%">伤 0.3M · 部署 2 / 损 1 · 人均 149K · FB 36</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/3756/icon?size=64" alt="灵感级" loading="lazy"><span class="name-text"><b>灵感级</b><span class="en">Gnosis · <a href="https://zkillboard.com/system/30000240/ship/3756/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="10%"></div><div class="bar-lost l-med" data-w="3%"></div><div class="bar-num" style="left: 12%">伤 0.3M · 部署 5 / 损 1 · 人均 50K · FB 26</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/72812/icon?size=64" alt="猛鲑级海军型" loading="lazy"><span class="name-text"><b>猛鲑级海军型</b><span class="en">Ferox Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/72812/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="7%"></div><div class="bar-lost l-low" data-w="3%"></div><div class="bar-num" style="left: 9%">伤 0.2M · 部署 31 / 损 1 · 人均 6K · FB 33</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/33155/icon?size=64" alt="先驱者级海军型" loading="lazy"><span class="name-text"><b>先驱者级海军型</b><span class="en">Harbinger Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/33155/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="7%"></div><div class="bar-lost l-med" data-w="6%"></div><div class="bar-num" style="left: 9%">伤 0.2M · 部署 9 / 损 2 · 人均 18K · FB 48</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/33151/icon?size=64" alt="布鲁提克斯级海军型" loading="lazy"><span class="name-text"><b>布鲁提克斯级海军型</b><span class="en">Brutix Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/33151/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="6%"></div><div class="bar-lost l-med" data-w="3%"></div><div class="bar-num" style="left: 8%">伤 0.1M · 部署 7 / 损 1 · 人均 20K · FB 20</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/78369/icon?size=64" alt="希兹里尔级" loading="lazy"><span class="name-text"><b>希兹里尔级</b><span class="en">Khizriel · 海军 · <a href="https://zkillboard.com/system/30000240/ship/78369/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="5%"></div><div class="bar-lost l-extreme" data-w="3%"></div><div class="bar-num" style="left: 7%">伤 0.1M · 部署 1 / 损 1 · 人均 129K · FB 21</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">攻击战列巡洋舰 · 部署 108 · 损 36 (33.3%) · 总伤 3.4M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/4310/icon?size=64" alt="龙卷风级" loading="lazy"><span class="name-text"><b>龙卷风级</b><span class="en">Tornado · <a href="https://zkillboard.com/system/30000240/ship/4310/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 2.6M · 部署 54 / 损 26 · 人均 48K · FB 282</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/4306/icon?size=64" alt="娜迦级" loading="lazy"><span class="name-text"><b>娜迦级</b><span class="en">Naga · <a href="https://zkillboard.com/system/30000240/ship/4306/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="19%"></div><div class="bar-lost l-med" data-w="27%"></div><div class="bar-num" style="left: 21%">伤 0.5M · 部署 38 / 损 7 · 人均 13K · FB 119</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/4302/icon?size=64" alt="预言级" loading="lazy"><span class="name-text"><b>预言级</b><span class="en">Oracle · <a href="https://zkillboard.com/system/30000240/ship/4302/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="7%"></div><div class="bar-lost l-high" data-w="12%"></div><div class="bar-num" style="left: 9%">伤 0.2M · 部署 10 / 损 3 · 人均 19K · FB 21</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/4308/icon?size=64" alt="塔洛斯级" loading="lazy"><span class="name-text"><b>塔洛斯级</b><span class="en">Talos · <a href="https://zkillboard.com/system/30000240/ship/4308/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="6%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 8%">伤 0.2M · 部署 6 / 损 0 · 人均 28K · FB 39</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">重型突击巡洋舰 · 部署 114 · 损 13 (11.4%) · 总伤 1.9M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12005/icon?size=64" alt="伊什塔级" loading="lazy"><span class="name-text"><b>伊什塔级</b><span class="en">Ishtar · T2 · <a href="https://zkillboard.com/system/30000240/ship/12005/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="83%"></div><div class="bar-num" style="left: 50%">伤 0.7M · 部署 15 / 损 5 · 人均 46K · FB 48</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12003/icon?size=64" alt="狂热级" loading="lazy"><span class="name-text"><b>狂热级</b><span class="en">Zealot · T2 · <a href="https://zkillboard.com/system/30000240/ship/12003/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="93%"></div><div class="bar-lost l-low" data-w="33%"></div><div class="bar-num" style="left: 50%">伤 0.6M · 部署 60 / 损 2 · 人均 11K · FB 163</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11999/icon?size=64" alt="流浪级" loading="lazy"><span class="name-text"><b>流浪级</b><span class="en">Vagabond · T2 · <a href="https://zkillboard.com/system/30000240/ship/11999/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="48%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 0.3M · 部署 12 / 损 0 · 人均 28K · FB 41</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12015/icon?size=64" alt="缪宁级" loading="lazy"><span class="name-text"><b>缪宁级</b><span class="en">Muninn · T2 · <a href="https://zkillboard.com/system/30000240/ship/12015/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="33%"></div><div class="bar-lost l-med" data-w="100%"></div><div class="bar-num" style="left: 35%">伤 0.2M · 部署 27 / 损 6 · 人均 8K · FB 56</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">战略巡洋舰 · 部署 203 · 损 18 (8.9%) · 总伤 3.7M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29984/icon?size=64" alt="金鹏级" loading="lazy"><span class="name-text"><b>金鹏级</b><span class="en">Tengu · ORE · <a href="https://zkillboard.com/system/30000240/ship/29984/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 2.0M · 部署 136 / 损 11 · 人均 15K · FB 704</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29986/icon?size=64" alt="圣卒级" loading="lazy"><span class="name-text"><b>圣卒级</b><span class="en">Legion · ORE · <a href="https://zkillboard.com/system/30000240/ship/29986/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="43%"></div><div class="bar-lost l-med" data-w="55%"></div><div class="bar-num" style="left: 45%">伤 0.9M · 部署 51 / 损 6 · 人均 17K · FB 271</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29990/icon?size=64" alt="洛基级" loading="lazy"><span class="name-text"><b>洛基级</b><span class="en">Loki · ORE · <a href="https://zkillboard.com/system/30000240/ship/29990/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="29%"></div><div class="bar-lost l-low" data-w="9%"></div><div class="bar-num" style="left: 31%">伤 0.6M · 部署 11 / 损 1 · 人均 53K · FB 81</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29988/icon?size=64" alt="海神级" loading="lazy"><span class="name-text"><b>海神级</b><span class="en">Proteus · ORE · <a href="https://zkillboard.com/system/30000240/ship/29988/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="14%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 16%">伤 0.3M · 部署 5 / 损 0 · 人均 55K · FB 170</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">战术驱逐舰 · 部署 215 · 损 25 (11.6%) · 总伤 2.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/34828/icon?size=64" alt="寒鸦级" loading="lazy"><span class="name-text"><b>寒鸦级</b><span class="en">Jackdaw · ORE · <a href="https://zkillboard.com/system/30000240/ship/34828/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-med" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 1.4M · 部署 139 / 损 15 · 人均 10K · FB 477</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/35683/icon?size=64" alt="赫卡特级" loading="lazy"><span class="name-text"><b>赫卡特级</b><span class="en">Hecate · ORE · <a href="https://zkillboard.com/system/30000240/ship/35683/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="37%"></div><div class="bar-lost l-low" data-w="33%"></div><div class="bar-num" style="left: 39%">伤 0.5M · 部署 61 / 损 5 · 人均 9K · FB 186</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/34317/icon?size=64" alt="忏悔者级" loading="lazy"><span class="name-text"><b>忏悔者级</b><span class="en">Confessor · ORE · <a href="https://zkillboard.com/system/30000240/ship/34317/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="17%"></div><div class="bar-lost l-high" data-w="33%"></div><div class="bar-num" style="left: 19%">伤 0.2M · 部署 15 / 损 5 · 人均 16K · FB 60</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">巡洋舰 · 部署 146 · 损 31 (21.2%) · 总伤 1.5M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/33818/icon?size=64" alt="奥苏斯级" loading="lazy"><span class="name-text"><b>奥苏斯级</b><span class="en">Orthrus · 海军 · <a href="https://zkillboard.com/system/30000240/ship/33818/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-med" data-w="22%"></div><div class="bar-num" style="left: 50%">伤 0.4M · 部署 16 / 损 2 · 人均 25K · FB 71</div></div>
+    <div class="meta win">A</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29344/icon?size=64" alt="送葬者级海军型" loading="lazy"><span class="name-text"><b>送葬者级海军型</b><span class="en">Exequror Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/29344/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="93%"></div><div class="bar-lost l-high" data-w="78%"></div><div class="bar-num" style="left: 50%">伤 0.4M · 部署 21 / 损 7 · 人均 18K · FB 61</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/626/icon?size=64" alt="狂怒者级" loading="lazy"><span class="name-text"><b>狂怒者级</b><span class="en">Vexor · T1 · <a href="https://zkillboard.com/system/30000240/ship/626/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="49%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 27 / 损 9 · 人均 7K · FB 36</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/621/icon?size=64" alt="狞獾级" loading="lazy"><span class="name-text"><b>狞獾级</b><span class="en">Caracal · T1 · <a href="https://zkillboard.com/system/30000240/ship/621/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="39%"></div><div class="bar-lost l-med" data-w="100%"></div><div class="bar-num" style="left: 41%">伤 0.2M · 部署 33 / 损 9 · 人均 5K · FB 37</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/47270/icon?size=64" alt="维德马克级" loading="lazy"><span class="name-text"><b>维德马克级</b><span class="en">Vedmak · T1 · <a href="https://zkillboard.com/system/30000240/ship/47270/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="38%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 40%">伤 0.2M · 部署 11 / 损 0 · 人均 14K · FB 22</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29340/icon?size=64" alt="鱼鹰级海军型" loading="lazy"><span class="name-text"><b>鱼鹰级海军型</b><span class="en">Osprey Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/29340/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="37%"></div><div class="bar-lost l-low" data-w="11%"></div><div class="bar-num" style="left: 39%">伤 0.1M · 部署 21 / 损 1 · 人均 7K · FB 24</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/17709/icon?size=64" alt="启示级海军型" loading="lazy"><span class="name-text"><b>启示级海军型</b><span class="en">Omen Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/17709/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="29%"></div><div class="bar-lost l-med" data-w="33%"></div><div class="bar-num" style="left: 31%">伤 0.1M · 部署 17 / 损 3 · 人均 7K · FB 28</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">驱逐舰 · 部署 188 · 损 32 (17.0%) · 总伤 1.1M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/16238/icon?size=64" alt="海燕级" loading="lazy"><span class="name-text"><b>海燕级</b><span class="en">Cormorant · T1 · <a href="https://zkillboard.com/system/30000240/ship/16238/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-med" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.6M · 部署 111 / 损 23 · 人均 5K · FB 170</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/49710/icon?size=64" alt="奇奇莫拉级" loading="lazy"><span class="name-text"><b>奇奇莫拉级</b><span class="en">Kikimora · T1 · <a href="https://zkillboard.com/system/30000240/ship/49710/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="37%"></div><div class="bar-lost l-med" data-w="26%"></div><div class="bar-num" style="left: 39%">伤 0.2M · 部署 27 / 损 6 · 人均 8K · FB 86</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/32876/icon?size=64" alt="渡鸦级" loading="lazy"><span class="name-text"><b>渡鸦级</b><span class="en">Corax · T1 · <a href="https://zkillboard.com/system/30000240/ship/32876/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="22%"></div><div class="bar-lost l-low" data-w="4%"></div><div class="bar-num" style="left: 24%">伤 0.1M · 部署 31 / 损 1 · 人均 4K · FB 53</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/73795/icon?size=64" alt="海燕级海军型" loading="lazy"><span class="name-text"><b>海燕级海军型</b><span class="en">Cormorant Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/73795/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="21%"></div><div class="bar-lost l-med" data-w="9%"></div><div class="bar-num" style="left: 23%">伤 0.1M · 部署 19 / 损 2 · 人均 7K · FB 55</div></div>
+    <div class="meta win">A</div>
+  </div>
+</div>
+
+<div class="tier-h">黑隐特勤舰 · 部署 5 · 损 0 (0.0%) · 总伤 0.7M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22428/icon?size=64" alt="救世级" loading="lazy"><span class="name-text"><b>救世级</b><span class="en">Redeemer · T2 · <a href="https://zkillboard.com/system/30000240/ship/22428/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 0.5M · 部署 4 / 损 0 · 人均 124K · FB 62</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22440/icon?size=64" alt="黑豹级" loading="lazy"><span class="name-text"><b>黑豹级</b><span class="en">Panther · T2 · <a href="https://zkillboard.com/system/30000240/ship/22440/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="48%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 1 / 损 0 · 人均 240K · FB 26</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">指挥舰 · 部署 32 · 损 1 (3.1%) · 总伤 0.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22446/icon?size=64" alt="兀鹫级" loading="lazy"><span class="name-text"><b>兀鹫级</b><span class="en">Vulture · T2 · <a href="https://zkillboard.com/system/30000240/ship/22446/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 32 / 损 1 · 人均 6K · FB 27</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">拦截舰 · 部署 57 · 损 57 (100.0%) · 总伤 0.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22456/icon?size=64" alt="剑齿虎级" loading="lazy"><span class="name-text"><b>剑齿虎级</b><span class="en">Sabre · T2 · <a href="https://zkillboard.com/system/30000240/ship/22456/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 57 / 损 57 · 人均 4K · FB 33</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">突击护卫舰 · 部署 95 · 损 15 (15.8%) · 总伤 1.3M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11393/icon?size=64" alt="审判者级" loading="lazy"><span class="name-text"><b>审判者级</b><span class="en">Retribution · T2 · <a href="https://zkillboard.com/system/30000240/ship/11393/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-med" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 1.2M · 部署 55 / 损 13 · 人均 21K · FB 228</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11381/icon?size=64" alt="女妖级" loading="lazy"><span class="name-text"><b>女妖级</b><span class="en">Harpy · T2 · <a href="https://zkillboard.com/system/30000240/ship/11381/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="14%"></div><div class="bar-lost l-low" data-w="15%"></div><div class="bar-num" style="left: 16%">伤 0.2M · 部署 40 / 损 2 · 人均 4K · FB 66</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">隐形轰炸舰 · 部署 66 · 损 66 (100.0%) · 总伤 2.7M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12038/icon?size=64" alt="净化级" loading="lazy"><span class="name-text"><b>净化级</b><span class="en">Purifier · T2 · <a href="https://zkillboard.com/system/30000240/ship/12038/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 2.7M · 部署 66 / 损 66 · 人均 41K · FB 210</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+
+
+
+<h3 class="gsf">⚔️ 攻方 Imperium — 各等级表现 (按总伤害排序)</h3>
+<div class="tier-h">战列舰 · 部署 502 · 损 384 (76.5%) · 总伤 26.0M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/17636/icon?size=64" alt="乌鸦级海军型" loading="lazy"><span class="name-text"><b>乌鸦级海军型</b><span class="en">Raven Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/17636/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="60%"></div><div class="bar-num" style="left: 50%">伤 13.1M · 部署 118 / 损 80 · 人均 111K · FB 127</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24688/icon?size=64" alt="鹏鲲级" loading="lazy"><span class="name-text"><b>鹏鲲级</b><span class="en">Rokh · <a href="https://zkillboard.com/system/30000240/ship/24688/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="46%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 48%">伤 6.0M · 部署 143 / 损 133 · 人均 42K · FB 45</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/24694/icon?size=64" alt="死亡漩涡级" loading="lazy"><span class="name-text"><b>死亡漩涡级</b><span class="en">Maelstrom · <a href="https://zkillboard.com/system/30000240/ship/24694/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="21%"></div><div class="bar-lost l-high" data-w="39%"></div><div class="bar-num" style="left: 23%">伤 2.8M · 部署 79 / 损 52 · 人均 35K · FB 36</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/638/icon?size=64" alt="乌鸦级" loading="lazy"><span class="name-text"><b>乌鸦级</b><span class="en">Raven · T1 · <a href="https://zkillboard.com/system/30000240/ship/638/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="20%"></div><div class="bar-lost l-extreme" data-w="42%"></div><div class="bar-num" style="left: 22%">伤 2.6M · 部署 69 / 损 56 · 人均 37K · FB 29</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/644/icon?size=64" alt="台风级" loading="lazy"><span class="name-text"><b>台风级</b><span class="en">Typhoon · T1 · <a href="https://zkillboard.com/system/30000240/ship/644/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="11%"></div><div class="bar-lost l-high" data-w="47%"></div><div class="bar-num" style="left: 13%">伤 1.5M · 部署 92 / 损 62 · 人均 16K · FB 18</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/17738/icon?size=64" alt="马克瑞级" loading="lazy"><span class="name-text"><b>马克瑞级</b><span class="en">Machariel · 海军 · <a href="https://zkillboard.com/system/30000240/ship/17738/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="1%"></div><div class="bar-lost l-extreme" data-w="1%"></div><div class="bar-num" style="left: 3%">伤 0.1M · 部署 1 / 损 1 · 人均 125K · FB 0</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">战斗战列巡洋舰 · 部署 2 · 损 0 (0.0%) · 总伤 0.3M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/16227/icon?size=64" alt="猛鲑级" loading="lazy"><span class="name-text"><b>猛鲑级</b><span class="en">Ferox · T1 · <a href="https://zkillboard.com/system/30000240/ship/16227/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 0.3M · 部署 2 / 损 0 · 人均 143K · FB 3</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">重型突击巡洋舰 · 部署 482 · 损 224 (46.5%) · 总伤 18.6M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12011/icon?size=64" alt="银鹰级" loading="lazy"><span class="name-text"><b>银鹰级</b><span class="en">Eagle · T2 · <a href="https://zkillboard.com/system/30000240/ship/12011/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 10.3M · 部署 82 / 损 0 · 人均 125K · FB 100</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12015/icon?size=64" alt="缪宁级" loading="lazy"><span class="name-text"><b>缪宁级</b><span class="en">Muninn · T2 · <a href="https://zkillboard.com/system/30000240/ship/12015/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="52%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 5.4M · 部署 340 / 损 173 · 人均 16K · FB 65</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12019/icon?size=64" alt="渎圣级" loading="lazy"><span class="name-text"><b>渎圣级</b><span class="en">Sacrilege · T2 · <a href="https://zkillboard.com/system/30000240/ship/12019/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="30%"></div><div class="bar-lost l-extreme" data-w="29%"></div><div class="bar-num" style="left: 32%">伤 3.0M · 部署 60 / 损 51 · 人均 51K · FB 33</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">战略巡洋舰 · 部署 6 · 损 2 (33.3%) · 总伤 1.0M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29984/icon?size=64" alt="金鹏级" loading="lazy"><span class="name-text"><b>金鹏级</b><span class="en">Tengu · ORE · <a href="https://zkillboard.com/system/30000240/ship/29984/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 0.9M · 部署 1 / 损 0 · 人均 886K · FB 1740</div></div>
+    <div class="meta win">A+</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29990/icon?size=64" alt="洛基级" loading="lazy"><span class="name-text"><b>洛基级</b><span class="en">Loki · ORE · <a href="https://zkillboard.com/system/30000240/ship/29990/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="17%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 19%">伤 0.1M · 部署 5 / 损 2 · 人均 30K · FB 31</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">战术驱逐舰 · 部署 122 · 损 81 (66.4%) · 总伤 0.8M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/34562/icon?size=64" alt="斯威普级" loading="lazy"><span class="name-text"><b>斯威普级</b><span class="en">Svipul · ORE · <a href="https://zkillboard.com/system/30000240/ship/34562/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.8M · 部署 122 / 损 81 · 人均 7K · FB 78</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">巡洋舰 · 部署 2701 · 损 2696 (99.8%) · 总伤 5.3M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/626/icon?size=64" alt="狂怒者级" loading="lazy"><span class="name-text"><b>狂怒者级</b><span class="en">Vexor · T1 · <a href="https://zkillboard.com/system/30000240/ship/626/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 2.9M · 部署 2686 / 损 2686 · 人均 1K · FB 83</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/29344/icon?size=64" alt="送葬者级海军型" loading="lazy"><span class="name-text"><b>送葬者级海军型</b><span class="en">Exequror Navy Issue · 海军 · <a href="https://zkillboard.com/system/30000240/ship/29344/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="79%"></div><div class="bar-lost l-extreme" data-w="0%"></div><div class="bar-num" style="left: 50%">伤 2.3M · 部署 14 / 损 10 · 人均 163K · FB 21</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/47270/icon?size=64" alt="维德马克级" loading="lazy"><span class="name-text"><b>维德马克级</b><span class="en">Vedmak · T1 · <a href="https://zkillboard.com/system/30000240/ship/47270/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="5%"></div><div class="bar-lost l-low" data-w="0%"></div><div class="bar-num" style="left: 7%">伤 0.1M · 部署 1 / 损 0 · 人均 143K · FB 2</div></div>
+    <div class="meta win">A+</div>
+  </div>
+</div>
+
+<div class="tier-h">驱逐舰 · 部署 111 · 损 111 (100.0%) · 总伤 0.7M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/49710/icon?size=64" alt="奇奇莫拉级" loading="lazy"><span class="name-text"><b>奇奇莫拉级</b><span class="en">Kikimora · T1 · <a href="https://zkillboard.com/system/30000240/ship/49710/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.7M · 部署 111 / 损 111 · 人均 7K · FB 36</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">黑隐特勤舰 · 部署 17 · 损 5 (29.4%) · 总伤 1.0M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22436/icon?size=64" alt="寡妇级" loading="lazy"><span class="name-text"><b>寡妇级</b><span class="en">Widow · T2 · <a href="https://zkillboard.com/system/30000240/ship/22436/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.7M · 部署 9 / 损 3 · 人均 79K · FB 1</div></div>
+    <div class="meta warn">B</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22428/icon?size=64" alt="救世级" loading="lazy"><span class="name-text"><b>救世级</b><span class="en">Redeemer · T2 · <a href="https://zkillboard.com/system/30000240/ship/22428/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="39%"></div><div class="bar-lost l-med" data-w="67%"></div><div class="bar-num" style="left: 41%">伤 0.3M · 部署 8 / 损 2 · 人均 35K · FB 2</div></div>
+    <div class="meta warn">B</div>
+  </div>
+</div>
+
+<div class="tier-h">指挥舰 · 部署 25 · 损 14 (56.0%) · 总伤 0.4M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22446/icon?size=64" alt="兀鹫级" loading="lazy"><span class="name-text"><b>兀鹫级</b><span class="en">Vulture · T2 · <a href="https://zkillboard.com/system/30000240/ship/22446/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="75%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 10 / 损 6 · 人均 21K · FB 4</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22468/icon?size=64" alt="月刃级" loading="lazy"><span class="name-text"><b>月刃级</b><span class="en">Claymore · T2 · <a href="https://zkillboard.com/system/30000240/ship/22468/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="99%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 15 / 损 8 · 人均 14K · FB 5</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">战斗侦察舰 · 部署 22 · 损 9 (40.9%) · 总伤 0.2M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11961/icon?size=64" alt="休津级" loading="lazy"><span class="name-text"><b>休津级</b><span class="en">Huginn · T2 · <a href="https://zkillboard.com/system/30000240/ship/11961/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.2M · 部署 22 / 损 9 · 人均 7K · FB 2</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">后勤舰 · 部署 16 · 损 12 (75.0%) · 总伤 0.1M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11978/icon?size=64" alt="曲剑级" loading="lazy"><span class="name-text"><b>曲剑级</b><span class="en">Scimitar · T2 · <a href="https://zkillboard.com/system/30000240/ship/11978/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.1M · 部署 16 / 损 12 · 人均 9K · FB 1</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">拦截舰 · 部署 12 · 损 10 (83.3%) · 总伤 0.1M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/22464/icon?size=64" alt="飞燕级" loading="lazy"><span class="name-text"><b>飞燕级</b><span class="en">Flycatcher · T2 · <a href="https://zkillboard.com/system/30000240/ship/22464/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.1M · 部署 12 / 损 10 · 人均 12K · FB 13</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">截击舰 · 部署 229 · 损 229 (100.0%) · 总伤 2.4M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11184/icon?size=64" alt="十字军级" loading="lazy"><span class="name-text"><b>十字军级</b><span class="en">Crusader · T2 · <a href="https://zkillboard.com/system/30000240/ship/11184/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 2.0M · 部署 176 / 损 176 · 人均 11K · FB 14</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11196/icon?size=64" alt="利爪级" loading="lazy"><span class="name-text"><b>利爪级</b><span class="en">Claw · T2 · <a href="https://zkillboard.com/system/30000240/ship/11196/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="14%"></div><div class="bar-lost l-extreme" data-w="11%"></div><div class="bar-num" style="left: 16%">伤 0.3M · 部署 19 / 损 19 · 人均 15K · FB 0</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11198/icon?size=64" alt="短剑级" loading="lazy"><span class="name-text"><b>短剑级</b><span class="en">Stiletto · T2 · <a href="https://zkillboard.com/system/30000240/ship/11198/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="8%"></div><div class="bar-lost l-extreme" data-w="19%"></div><div class="bar-num" style="left: 10%">伤 0.2M · 部署 34 / 损 34 · 人均 5K · FB 0</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">突击护卫舰 · 部署 289 · 损 212 (73.4%) · 总伤 4.5M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11393/icon?size=64" alt="审判者级" loading="lazy"><span class="name-text"><b>审判者级</b><span class="en">Retribution · T2 · <a href="https://zkillboard.com/system/30000240/ship/11393/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="88%"></div><div class="bar-num" style="left: 50%">伤 3.2M · 部署 116 / 损 99 · 人均 28K · FB 67</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11381/icon?size=64" alt="女妖级" loading="lazy"><span class="name-text"><b>女妖级</b><span class="en">Harpy · T2 · <a href="https://zkillboard.com/system/30000240/ship/11381/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="40%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 42%">伤 1.3M · 部署 173 / 损 113 · 人均 7K · FB 29</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">隐形轰炸舰 · 部署 3530 · 损 3530 (100.0%) · 总伤 30.6M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12038/icon?size=64" alt="净化级" loading="lazy"><span class="name-text"><b>净化级</b><span class="en">Purifier · T2 · <a href="https://zkillboard.com/system/30000240/ship/12038/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-extreme" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 17.5M · 部署 1711 / 损 1711 · 人均 10K · FB 38</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12034/icon?size=64" alt="猎犬级" loading="lazy"><span class="name-text"><b>猎犬级</b><span class="en">Hound · T2 · <a href="https://zkillboard.com/system/30000240/ship/12034/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="34%"></div><div class="bar-lost l-extreme" data-w="38%"></div><div class="bar-num" style="left: 36%">伤 5.9M · 部署 645 / 损 645 · 人均 9K · FB 15</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/12032/icon?size=64" alt="蝎尾怪级" loading="lazy"><span class="name-text"><b>蝎尾怪级</b><span class="en">Manticore · T2 · <a href="https://zkillboard.com/system/30000240/ship/12032/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="33%"></div><div class="bar-lost l-extreme" data-w="46%"></div><div class="bar-num" style="left: 35%">伤 5.8M · 部署 788 / 损 788 · 人均 7K · FB 30</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/11377/icon?size=64" alt="纳美西斯级" loading="lazy"><span class="name-text"><b>纳美西斯级</b><span class="en">Nemesis · T2 · <a href="https://zkillboard.com/system/30000240/ship/11377/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="8%"></div><div class="bar-lost l-extreme" data-w="23%"></div><div class="bar-num" style="left: 10%">伤 1.4M · 部署 386 / 损 386 · 人均 4K · FB 12</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+<div class="tier-h">护卫舰 · 部署 144 · 损 96 (66.7%) · 总伤 0.4M</div>
+<div class="chart-grid">
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/597/icon?size=64" alt="惩罚者级" loading="lazy"><span class="name-text"><b>惩罚者级</b><span class="en">Punisher · T1 · <a href="https://zkillboard.com/system/30000240/ship/597/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="100%"></div><div class="bar-lost l-high" data-w="100%"></div><div class="bar-num" style="left: 50%">伤 0.3M · 部署 138 / 损 90 · 人均 2K · FB 22</div></div>
+    <div class="meta loss">C</div>
+  </div>
+  <div class="chart-row">
+    <div class="ship"><img class="ship-icon" src="https://images.evetech.net/types/585/icon?size=64" alt="伐木者级" loading="lazy"><span class="name-text"><b>伐木者级</b><span class="en">Slasher · T1 · <a href="https://zkillboard.com/system/30000240/ship/585/year/2026/month/4/day/28/" target="_blank" style="color:var(--accent)">zKB↗</a></span></span></div>
+    <div class="barcell"><div class="bar-fielded" data-w="43%"></div><div class="bar-lost l-extreme" data-w="7%"></div><div class="bar-num" style="left: 45%">伤 0.1M · 部署 6 / 损 6 · 人均 20K · FB 1</div></div>
+    <div class="meta loss">C</div>
+  </div>
+</div>
+
+
+
+<h2 id="damage-analysis">人均伤害排行(主流制式 ≥ 10 飞行员)</h2>
+<p>WarBeacon 的总伤害会把舰船、建筑、部署物一起计入。这里把口径拆开: <b>对舰船伤害</b>更接近实际火力贡献, <b>对结构/部署物伤害</b>包含 Keepstar、泡泡等目标。</p>
+
+<div class="grid g2">
+  <div class="card">
+    <h3 class="frt">FRT 阵营 · 人均伤害 Top 10</h3>
+    <table>
+      <tr><th>等级</th><th>舰船</th><th class="num">人数</th><th class="num">总伤害/人</th><th class="num">舰船/人</th><th class="num">结构部署物/人</th></tr>
+      <tr><td><span class="pill" style="background:rgba(255,209,102,.15);color:var(--gold)">无畏舰</span></td><td><b>泽尼塔级</b> Zirnitra ★ 泡泡清理</td><td class="num">20</td><td class="num warn"><b>393,619</b></td><td class="num loss"><b>4,943</b></td><td class="num win"><b>388,676</b></td></tr>
+      <tr><td><span class="pill" style="background:rgba(255,138,61,.15);color:var(--frt)">海军无畏舰</span></td><td>莫洛级海军型 Moros NI</td><td class="num">82</td><td class="num win">121,854</td><td class="num win"><b>72,870</b></td><td class="num">48,983</td></tr>
+      <tr><td><span class="pill" style="background:rgba(255,138,61,.15);color:var(--frt)">海军无畏舰</span></td><td>神示级海军型 RNI</td><td class="num">103</td><td class="num win">112,658</td><td class="num">44,234</td><td class="num">68,424</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">无畏舰</span></td><td>莫洛级 Moros</td><td class="num">13</td><td class="num">98,197</td><td class="num win">69,664</td><td class="num">28,533</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">无畏舰</span></td><td>纳迦法级 Naglfar</td><td class="num">10</td><td class="num">84,604</td><td class="num win">84,604</td><td class="num">0</td></tr>
+      <tr><td><span class="pill" style="background:rgba(199,119,255,.15);color:var(--gsf)">超级航母</span></td><td>冥府级 Hel</td><td class="num">30</td><td class="num">82,237</td><td class="num">57,470</td><td class="num">24,767</td></tr>
+      <tr><td><span class="pill" style="background:rgba(199,119,255,.15);color:var(--gsf)">超级航母</span></td><td>夜神级 Nyx</td><td class="num">30</td><td class="num">61,597</td><td class="num">39,587</td><td class="num">22,010</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">无畏舰</span></td><td>神示级 Revelation</td><td class="num">59</td><td class="num">60,659</td><td class="num">32,771</td><td class="num">27,888</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">战略巡洋舰</span></td><td>洛基级 Loki</td><td class="num">11</td><td class="num">52,659</td><td class="num">52,659</td><td class="num">0</td></tr>
+      <tr><td><span class="pill" style="background:rgba(255,200,87,.15);color:var(--warn)">掠夺舰</span></td><td>恶狼级 Vargur</td><td class="num">22</td><td class="num">48,581</td><td class="num">48,581</td><td class="num">0</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3 class="gsf">攻方 Imperium · 人均伤害 Top 10</h3>
+    <table>
+      <tr><th>等级</th><th>舰船</th><th class="num">人数</th><th class="num">总伤害/人</th><th class="num">舰船/人</th><th class="num">结构部署物/人</th></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">海军巡洋舰</span></td><td>送葬者级海军型 Exequror NI</td><td class="num">14</td><td class="num win"><b>163,420</b></td><td class="num">8,467</td><td class="num win"><b>154,952</b></td></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">重型突击巡洋舰</span></td><td><b>银鹰级</b> Eagle ★ 主结构输出</td><td class="num">82</td><td class="num win"><b>125,166</b></td><td class="num">10,963</td><td class="num win">114,204</td></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">海军战列舰</span></td><td>乌鸦级海军型 (海军乌鸦)</td><td class="num">118</td><td class="num win">110,729</td><td class="num win">26,567</td><td class="num">84,162</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">黑隐特勤舰</span></td><td>寡妇级 Widow</td><td class="num">11</td><td class="num">69,400</td><td class="num win">32,695</td><td class="num">36,705</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">重型突击巡洋舰</span></td><td>渎圣级 Sacrilege</td><td class="num">60</td><td class="num">50,535</td><td class="num">5,139</td><td class="num">45,396</td></tr>
+      <tr><td><span class="pill" style="background:rgba(102,178,255,.15);color:var(--accent)">截击舰</span></td><td>十字军级 Crusader</td><td class="num">46</td><td class="num">43,418</td><td class="num">2,183</td><td class="num">41,235</td></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">战列舰</span></td><td>鹏鲲级 Rokh</td><td class="num">143</td><td class="num">42,093</td><td class="num">2,304</td><td class="num">39,789</td></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">战列舰</span></td><td>乌鸦级 Raven</td><td class="num">69</td><td class="num">37,183</td><td class="num">10,244</td><td class="num">26,939</td></tr>
+      <tr><td><span class="pill" style="background:rgba(123,216,143,.15);color:var(--win)">战列舰</span></td><td>死亡漩涡级 Maelstrom</td><td class="num">79</td><td class="num">35,334</td><td class="num">7,336</td><td class="num">27,999</td></tr>
+      <tr><td><span class="pill" style="background:rgba(255,138,61,.15);color:var(--frt)">隐形轰炸舰</span></td><td>净化级 Purifier</td><td class="num">571</td><td class="num">30,710</td><td class="num">1,802</td><td class="num">28,908</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px; background: rgba(255,209,102,.06); border-color: rgba(255,209,102,.3)">
+  <h3 class="gold" style="margin-top:0">⚡ 口径修正:Zirnitra 的高伤害主要不是舰船伤害</h3>
+  <p>20 个 FRT Zirnitra 飞行员总伤害 <b>7.87M</b>,但其中 <b>7.77M</b> 打在结构/部署物上,对舰船只有 <b>98.9K</b>。人均拆开后是:总伤害 <b>393,619</b> / 对舰船 <b class="loss">4,943</b> / 对结构部署物 <b class="win">388,676</b>。</p>
+  <p>更精确地说 — Zirnitra 全程<b>焊在 4-HWWF 外部泡泡阵以及 B-9 星城上刷无效输出</b>,主目标是大型机动跃迁扰断器 I/II(anchor bubbles):WarBeacon 明细里 Zirnitra 对大型泡泡造成 7.77M 伤害,拿到 42 个大型泡泡 final blow。<b>输出最高的那艘 znt 单艘打了 ~1M 伤害,击杀 23 个大型机动跃迁扰断器</b>。所以本场 Zirnitra 更像"清泡泡 / 反 anchor"工具,<b>不能按总伤害直接评为跨阵营火力王</b>。</p>
+  <p class="sub" style="margin-top:8px;border-top:1px dashed rgba(255,209,102,.2);padding-top:8px">📣 口径修正感谢 <b style="color:var(--frt)">FUXI-冰月冰月冰 / Fr0zenmn</b> (FUXI 管理员)提醒。</p>
+</div>
+
+<div class="grid g2" style="margin-top:14px">
+  <div class="card analysis-card" style="border-color: rgba(199,119,255,.35)">
+    <h3 class="gsf" style="margin-top:0">攻方 Keepstar 伤害:隐轰是主力</h3>
+    <p>这里不再把泡泡、MTU、战机等部署物算进建筑输出,只统计 victim type = <b>Keepstar</b> 的伤害。WarBeacon 明细里有 #System、胶囊等归因异常项,下表只看真实舰船制式。</p>
+    <table>
+      <tr><th>制式</th><th class="num">人数</th><th class="num">Keepstar 总伤害</th><th class="num">Keepstar/人</th><th>说明</th></tr>
+      <tr><td><b>净化级</b> Purifier</td><td class="num">471</td><td class="num win"><b>14.87M</b></td><td class="num">31,567</td><td>单一制式第一,隐轰主力</td></tr>
+      <tr><td><b>猎犬级</b> Hound</td><td class="num">183</td><td class="num win">5.13M</td><td class="num">28,008</td><td>隐轰第二梯队</td></tr>
+      <tr><td><b>缪宁级</b> Muninn</td><td class="num">100</td><td class="num">3.37M</td><td class="num">33,735</td><td>HAC 持续补结构伤害</td></tr>
+      <tr><td><b>蝎尾怪级</b> Manticore</td><td class="num">161</td><td class="num">3.02M</td><td class="num">18,738</td><td>隐轰第三梯队</td></tr>
+      <tr><td><b>乌鸦级海军型</b> Raven NI</td><td class="num">52</td><td class="num">2.15M</td><td class="num win"><b>41,277</b></td><td>海军战列补结构伤害</td></tr>
+      <tr><td><b>十字军级</b> Crusader</td><td class="num">34</td><td class="num">1.71M</td><td class="num win">50,238</td><td>人均高,总量不是主轴</td></tr>
+      <tr><td><b>纳美西斯级</b> Nemesis</td><td class="num">53</td><td class="num">878K</td><td class="num">16,568</td><td>拿到 Keepstar final blow</td></tr>
+    </table>
+    <p class="sub">结论:隐轰没有消失,只是被“总伤害/人”排名摊薄了。按 Keepstar 总伤害看,四类隐轰合计约 <b>23.9M Keepstar</b> 伤害,其中 Purifier 单项 14.87M 全场第一。送葬者海军、银鹰等之前看起来高,主要是打大型泡泡/部署物,不应算作 Keepstar 主伤害。</p>
+  </div>
+  <div class="card analysis-card" style="border-color: rgba(255,138,61,.35)">
+    <h3 class="frt" style="margin-top:0">FRT 反隐轰:谁杀 bomber 最有效</h3>
+    <p>我们这边的关键任务不是刷总伤害,而是打掉隐轰循环。评价反隐轰应看 <b>隐轰 final blow</b>、参与击杀数量和单位人数效率。</p>
+    <table>
+      <tr><th>制式</th><th class="num">人数</th><th class="num">隐轰 final</th><th class="num">参与隐轰击杀</th><th class="num">对隐轰伤害</th></tr>
+      <tr><td><b>金鹏级</b> Tengu</td><td class="num">132</td><td class="num win"><b>502</b></td><td class="num"><b>1,020</b></td><td class="num">1.29M</td></tr>
+      <tr><td><b>猛鲑级</b> Ferox</td><td class="num">271</td><td class="num win">459</td><td class="num"><b>1,139</b></td><td class="num">1.21M</td></tr>
+      <tr><td><b>寒鸦级</b> Jackdaw</td><td class="num">129</td><td class="num">330</td><td class="num">971</td><td class="num">898K</td></tr>
+      <tr><td><b>圣卒级</b> Legion</td><td class="num">46</td><td class="num">220</td><td class="num">442</td><td class="num">567K</td></tr>
+      <tr><td><b>帕拉丁级</b> Paladin</td><td class="num">90</td><td class="num">199</td><td class="num">468</td><td class="num">546K</td></tr>
+    </table>
+    <p class="sub">结论:金鹏和猛鲑是规模化反隐轰主力;寒鸦补足快速锁小船;圣卒/海神等小规模 T3C 单位人数效率高,适合做专职猎 bomber 小队。</p>
+  </div>
+</div>
+
+<h2>🎯 总结 — 双方各自的进攻 / 防守 / 短板</h2>
+<p class="sub">按阵营分两栏,每栏列各自的进攻强项 + 防守强项 + 短板。这样不会把双方混在一起。</p>
+
+<div class="grid g2" style="margin-top:14px">
+  <div class="card" style="border-color: rgba(255,138,61,.4)">
+    <h3 class="frt" style="margin-top:0">FRT 阵营</h3>
+
+    <h4 style="color:var(--loss); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">⚔️ 进攻最给力</h4>
+    <ul>
+      <li><b>莫洛级海军型 / 神示级海军型 (海军无畏舰)</b> — 总伤害高,且对舰船人均约 73K / 44K,是真正主力舰船火力</li>
+      <li><b>泽尼塔级 Zirnitra (无畏舰)</b> — 总伤害 393K/人,但舰船伤害仅 4.9K/人;本场主要价值是清外部泡泡和压部署物</li>
+      <li><b>金鹏级 / 猛鲑级 / 寒鸦级</b> — 反隐轰主轴:金鹏 502 个隐轰 final,猛鲑参与 1,139 个隐轰击杀,寒鸦 330 个隐轰 final</li>
+    </ul>
+
+    <h4 style="color:var(--win); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">🛡️ 防守最稳</h4>
+    <ul>
+      <li><b>灾难级海军型 APN</b> — 187 部署 / 损失率 1.6% / 507 次最后一击 ★ MVP</li>
+      <li><b>鹏鲲级 Rokh</b> — 539 部署 / 损失率 3.9% / 504 次最后一击</li>
+      <li><b>狂暴级舰队型 TFI</b> — 211 部署 / 损失率 3.8%</li>
+      <li><b>航母 82 艘 + 超航 103 艘</b>(绝念 + 执政官 + 尼铎格尔 + 奇美拉 + 万古 + 冥府 + 夜神 + 飞龙)— 185 艘 cap-tier 仅损 1 艘执政官</li>
+      <li><b>海军无畏 220 艘</b>(神示海军 / 莫洛海军 / 凤凰海军 / 纳迦法舰队)— 0.9% 损失率</li>
+    </ul>
+
+    <h4 style="color:var(--warn); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">⚠️ 短板</h4>
+    <ul>
+      <li><b>反隐轰中队完全缺位</b> — 让对方隐轰群循环 8 小时</li>
+      <li><b>帕拉丁级 9 艘损失 (11.9b)</b> — 会战装备 bastion 锁死陷阱,恶狼级人均伤害还高 70%</li>
+      <li><b>星城殒落后 30 分钟 cap 撤离 SOP 失灵</b> — 又损失 7 艘 cap-tier</li>
+      <li><b>ECM 站位纪律</b> — noraus 中途广播提醒拉到 70km+</li>
+      <li><b>猛鲑级人均伤害仅 7,437</b> — 性价比最低</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border-color: rgba(199,119,255,.4)">
+    <h3 class="gsf" style="margin-top:0">攻方 Imperium</h3>
+
+    <h4 style="color:var(--loss); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">⚔️ 进攻最给力</h4>
+    <ul>
+      <li><b>净化级 / 猎犬级 / 蝎尾怪级 / 纳美西斯级 (隐轰群)</b> — Keepstar 主力来源:四类隐轰合计约 23.9M Keepstar 伤害,净化级单项 14.87M 全场第一</li>
+      <li><b>缪宁级 + 乌鸦级海军型</b> — 非隐轰补充结构伤害,但 Keepstar 总量低于隐轰群</li>
+      <li><b>银鹰级 / 送葬者级海军型</b> — 主要价值更偏清外部泡泡和部署物,不能按“结构/部署物”总和误判成 Keepstar 主力</li>
+      <li><b>寡妇级 Widow (黑隐特勤舰)</b> — 仅 2 艘但 jam 锁死星城点防</li>
+    </ul>
+
+    <h4 style="color:var(--win); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">🛡️ 防守最稳</h4>
+    <ul>
+      <li><b>银鹰级 Eagle</b> — 远射 + 高机动 + 屏障 buffer,FRT 没拉 anti-snipe 距离 → 全程低损输出</li>
+      <li><b>渎圣级 Sacrilege</b> — 60 部署 / 损失率高但 alpha 强</li>
+      <li><b>0 cap 部署</b> — 不暴露 cap 资产,纯亚 cap 磨</li>
+    </ul>
+
+    <h4 style="color:var(--warn); font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin: 12px 0 6px">⚠️ 短板</h4>
+    <ul>
+      <li><b>0 cap 部署</b> — 怕 FRT alpha,不敢直接对 cap 线 (优点 + 短板二者皆是)</li>
+      <li><b>隐轰 92% 损失率</b>(~3,500 艘) — 硬磨星城代价沉重</li>
+      <li><b>狂怒者级廉价凯姿 98.5% 损失</b> — 纯 feeder,无实际输出贡献</li>
+      <li><b>没投超级航母</b> — 缺乏战机反 FRT 103 艘 super 战机编队</li>
+      <li><b>缪宁级 173 艘损失 (35b)</b> — 被 FRT 鹏鲲级远射打烂</li>
+    </ul>
+  </div>
+</div>
+
+<h2>战损对比</h2>
+<table>
+  <tr><th>项目</th><th class="num frt">FRT</th><th class="num gsf">攻方 Imperium</th></tr>
+  <tr><td>船损艘数</td><td class="num">1,269</td><td class="num">11,378</td></tr>
+  <tr><td>亚系列 + cap ISK</td><td class="num">134.5b</td><td class="num loss">461.8b</td></tr>
+  <tr><td>结构损失</td><td class="num warn"><b>2× Keepstar</b><br><span class="sub">B-9 (上午) + 4-HWWF (180.5b 下午)</span></td><td class="num">— (无结构损失)</td></tr>
+  <tr><td>Cap 损失数</td><td class="num">19 艘<br><span class="sub">9× 帕拉丁 · 3× 恶狼 · 1× 克洛诺斯 · 2× 神示 · 1× 纳迦法 · 1× 神示海军 · 1× 莫洛海军 · 1× 执政官</span></td><td class="num">4 艘<br><span class="sub">4× Monitor (logi)</span></td></tr>
+  <tr><td>WarBeacon 效率(亚系列)</td><td class="num win">77.5%</td><td class="num">22.5%</td></tr>
+</table>
+
+<h2>结论</h2>
+<div class="verdict">
+  <p><strong>这场仗的成功标准从一开始就不是"保住星城"。是把对方代价拉满,且让团队问心无愧打完这一仗。两个目标都达成了。</strong></p>
+  <ul style="margin-top:8px;">
+    <li><b>已确定</b>:FRT 同日丢两座 Keepstar (B-9 + 4-HWWF),硬件损失 315b。Imperium 付 462b 亚 cap + ~3,500 隐轰 (~92% 损失率)。这不是失败,是带血代价的预期交换。</li>
+    <li><b>已确定</b>:双方输出任务不同 — 攻方 Keepstar 伤害主要来自隐轰群,银鹰/送葬者海军更多承担清泡泡和部署物;FRT 主要打舰船和清隐轰,金鹏 / 猛鲑 / 寒鸦是反隐轰击杀核心。</li>
+    <li><b>已确定</b>:帕拉丁级 9 艘损失(11.9b)是亚 cap 最重 — 会战装备 (bastion) 模式陷阱明显。同条件下恶狼级损失只 1/3。</li>
+    <li><b>已确定</b>:星城死后 30 分钟内 dread 撤离失败,神示级海军型 / 莫洛级海军型 / 2× 神示级 / 4× 帕拉丁级 接连被点 — 是 SOP 问题不是 doctrine 问题。</li>
+    <li><b>战歌 / Ezio Harry SOTG (22:40 BJT)</b>:"<i>新战术,新安排,更高效的指挥和更有素质的成员,问心无愧了</i>"</li>
+  </ul>
+</div>
+
+<h2 id="action-plan" class="warn">FRT 下次再遇这种情况怎么调整</h2>
+
+<h3>1. 部署专门反隐轰中队 — 这是 #1 优先项</h3>
+<div class="card">
+  <p>本场 Imperium 隐轰群打出约 <b>23.9M Keepstar</b> 伤害,是磨星城的第一主力来源。FRT 已经靠金鹏 / 猛鲑 / 寒鸦 / 圣卒杀出大量隐轰,但仍缺少一支只负责扫 bomber 的专门中队。noraus 战中已经在喊 "我们杀了 1500 个隐轰" — 这数字本可以更大。</p>
+  <p><b>下次必备:</b></p>
+  <ul>
+    <li><b>大型烟雾弹 T1 战列舰中队 (灾难级 T1 + 4× 大型力场烟雾弹)</b>:30-50 艘,星城周围 50km 散开,每 10s cycle 烧隐轰。烟雾弹 AOE 不挑 cloak 状态。</li>
+    <li><b>金鹏级重导中队扩编</b>:本场金鹏拿了 502 个隐轰 final,参与 1,020 个隐轰击杀,但只损失 11 艘 = 部署量太少。下次加到 100+ 金鹏专职反隐轰。</li>
+    <li><b>猛鲑/寒鸦反隐轰分队</b>:猛鲑参与 1,139 个隐轰击杀,寒鸦拿 330 个隐轰 final。下次可以明确拆出反 bomber anchor,不要混在主射击目标里。</li>
+    <li><b>103 艘超级航母(万古/冥府/夜神/飞龙)的重型战机主动反 frig</b>:本场 103 艘 super 全部 0 损失但战机输出有限。重型战机撕隐轰 5 秒一架,这是 0 成本反制。</li>
+    <li><b>移动跳跃信标干扰器</b> 阻断对方桥:Imperium 用寡妇级跨区桥接隐轰,移动 cyno 干扰能切断 cycle。</li>
+  </ul>
+</div>
+
+<h3>2. 帕拉丁级必须改 doctrine — 9 艘损失是讯号</h3>
+<div class="card">
+  <p>9 艘帕拉丁级损失(11.9b)是亚 cap 最重舰种。会战装备模式锁死 60s = 主目标固定。同条件下恶狼级死 3 艘,克洛诺斯级死 1 艘 — 损失差别明显。</p>
+  <p><b>三选一:</b></p>
+  <ul>
+    <li><b>方案 A — 改恶狼级</b>(机动屏障):屏障 buffer + 700mm 自动加农炮,bastion 抗压更强,Minmatar 自动加农炮还能近距点隐轰。本场数据已验证恶狼级损失率显著低于帕拉丁。</li>
+    <li><b>方案 B — 帕拉丁不开会战装备</b>:active rep + 超光速激光长射程,放弃 bastion mode。损失 DPS 但生存力高。</li>
+    <li><b>方案 C — 帕拉丁配 dedicated FAX</b>:每 3 个帕拉丁跟 1 个使徒级,active rep + 电容链。需要 FAX 数量翻倍。</li>
+  </ul>
+  <p>个人推荐 <b>方案 A</b> — 本场海军 dread alpha 已经很充沛,Marauder DPS 不该是核心补充,恶狼级比帕拉丁更适合大舰队配合。</p>
+</div>
+
+<h3>3. "星城殒落 + 5 min, 全 cap jump out" SOP</h3>
+<div class="card">
+  <p>本场星城 23:02 殒落,接下来 30 分钟内 FRT 又损失 7 艘 cap-tier(神示级海军型 / 莫洛级海军型 / 2× 神示级 / 4× 帕拉丁级)。原因是 dread 留场过久,被 Imperium 巩固阵地后反扫。</p>
+  <p>Doc 22:11 那条 "如果你在站内,即刻下线" 的广播是站内 logoff 旗舰预警,但已经在场上的 dread 没有相应撤离 SOP。</p>
+  <p><b>下次必备:</b></p>
+  <ul>
+    <li><b>"星城死 + 5 min" rule</b>:Keepstar 殒落 5 分钟内,所有 cap 必须 jump out 到预设系统。FC pre-brief 写进 MOTD。</li>
+    <li><b>跳跃信标预架</b>:旁边 1-2 跳系统提前架信标,死星城那一刻立即跨区。纳迦法死时被 129 人围,就是因为没有出口。</li>
+    <li><b>下线不可信</b>:Imperium 在星城死后部署 HIC 泡锁 cap,logoff 会被记录后续被点。直接 jump,不要赌。</li>
+  </ul>
+</div>
+
+<h3>4. ECM 站位纪律继续打磨</h3>
+<div class="card">
+  <p>noraus 战中喊话: "<b>停止 ECM, 拉离星城越远越好。超过 70KM 再开。</b>" 说明场上有人在星城附近开 ECM 反而被星城脉冲反制(Keepstar 大型脉冲会清除 50km 内所有 jam),浪费了 ECM cycle 还吃星城驻留。</p>
+  <p>下次星城防御战 pre-brief 必须包含: <b>EWAR 船全程站 70km+</b>。</p>
+</div>
+
+<h3>5. 亚 cap doctrine 不需要调整 — 继续用</h3>
+<div class="card">
+  <p>鹏鲲级 / 灾难级海军型 / 狂暴级舰队型 损失率都在 4% 以下,主炮射程合理 + 屏障抗压充足。继续用。</p>
+  <p>唯一可以微调的是 <b>猛鲑级减量</b>:6.9% 损失率比鹏鲲级高 2 倍,且单艘伤害低。下次如果是 BB 主战可以把猛鲑名额转给鹏鲲级。猛鲑级留给散打/BLOPS。</p>
+</div>
+
+<h3>6. "小航大于大航" — noraus 战前指引,本场未充分体现</h3>
+<div class="card">
+  <p>04-27 noraus 战前 PING 提醒:"<b>小航大于大航 — 如果你的航模不能开其他船, 那么应该准备好</b>"。本场实际部署:航空母舰 82 艘 (绝念 33 / 执政官 20 / 尼铎格尔 19 / 奇美拉 10) + 超级航母 103 艘 (万古 30 / 冥府 30 / 夜神 30 / 飞龙 13),仅 1 艘执政官损失。</p>
+  <p>下次 timer 战前需要明确: 航母群继续维持后排放战机,super 战机编队应更主动反隐轰。185 艘航母+超航全部 0 损失证明站位 SOP 已经稳,机会成本是战机出动率不够激进。</p>
+</div>
+
+<h2>📔 战场私记 — 作者亲历</h2>
+<div class="diary-card">
+  <div class="diary-corner top-left"></div>
+  <div class="diary-corner top-right"></div>
+  <div class="diary-corner bottom-left"></div>
+  <div class="diary-corner bottom-right"></div>
+  <div class="diary-quote-mark">❝</div>
+  <p class="diary-text">
+    我在星城爆炸后准备旗舰跳的时候发现 — <b>出门忘带燃料</b>。SB 死定了。<br>
+    但是看到星城复活的截图,看到 <b>小航居然挂靠了</b>,用跃迁逃生。
+  </p>
+  <p class="diary-blessing">
+    🙏 <b>感谢星城肉山盾保佑</b>
+  </p>
+  <div class="diary-sig">
+    <img src="https://images.evetech.net/characters/716283942/portrait?size=64" alt="artist D">
+    <span>artist D · 2026-04-28 BJT 23:0X · 4-HWWF</span>
+  </div>
+</div>
+
+<style>
+  .diary-card {
+    position: relative;
+    margin: 18px 0;
+    padding: 32px 38px 24px;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(255,209,102,.05), transparent 50%),
+      linear-gradient(180deg, #1a1812, #14110d);
+    border: 1px solid rgba(255,209,102,.25);
+    border-radius: 4px;
+    color: #e8dcc4;
+    font-family: "Noto Serif SC", "Songti SC", "STSong", "PingFang SC", serif;
+    line-height: 1.85;
+    overflow: hidden;
+  }
+  .diary-card::before {
+    content: ""; position: absolute; inset: 6px;
+    border: 1px dashed rgba(255,209,102,.15);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .diary-corner {
+    position: absolute; width: 14px; height: 14px;
+    border: 2px solid var(--gold);
+    opacity: .6;
+  }
+  .diary-corner.top-left    { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+  .diary-corner.top-right   { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+  .diary-corner.bottom-left { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+  .diary-corner.bottom-right{ bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+  .diary-quote-mark {
+    font-family: serif;
+    font-size: 56px;
+    color: var(--gold);
+    opacity: .35;
+    line-height: 1;
+    position: absolute;
+    top: 14px; left: 22px;
+  }
+  .diary-text {
+    font-size: 16px;
+    color: #e8dcc4;
+    margin: 14px 0 18px;
+    padding-left: 28px;
+    text-indent: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .diary-text b {
+    color: var(--gold);
+    font-weight: 600;
+    background: linear-gradient(180deg, transparent 60%, rgba(255,209,102,.15) 60%);
+    padding: 0 2px;
+  }
+  .diary-blessing {
+    text-align: center;
+    font-size: 17px;
+    color: var(--gold);
+    margin: 18px 0 14px;
+    letter-spacing: .15em;
+    text-shadow: 0 0 18px rgba(255,209,102,.25);
+    font-weight: 500;
+  }
+  .diary-blessing b {
+    background: linear-gradient(90deg, var(--gold), #ffe6b5, var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+  .diary-sig {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,209,102,.15);
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    letter-spacing: .04em;
+    justify-content: flex-end;
+  }
+  .diary-sig img {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1px solid rgba(255,209,102,.4);
+  }
+  @media (max-width: 720px) {
+    .diary-card { padding: 24px 20px 18px; }
+    .diary-quote-mark { font-size: 40px; top: 8px; left: 14px; }
+    .diary-text { padding-left: 16px; font-size: 15px; }
+  }
+</style>
+
+<h2>感谢 + 战后</h2>
+<p>感谢 4,160 名 FRT 阵营线员在 9 小时长战中坚持 — 鹏鲲级 504 次最后一击 + 灾难级海军型 507 次,说明每一发主炮都打出了价值。感谢 NC. + PL + TEST 盟友的 dread alpha 支援。</p>
+<p>感谢 noraus、魔兽、Ezio Harry、Qxlt4 14、Doc、Kudaliar Beddelver、jubah 等 FC 的全天指挥;感谢 SARD 在星城殒落后的撤离广播,让更多线员安全下线。</p>
+<p>正如 noraus 所说: "<b>2021.2.3 - 2026.4.28 老星城托举这个联盟和他的成员变成更有经验更资历的集体。</b>" — 老站送走了,经验和团结留下来了。下个 timer 见。</p>
+
+<!-- === 作者署名卡 === -->
+<div class="author-card">
+  <img class="ac-portrait" src="https://images.evetech.net/characters/716283942/portrait?size=256" alt="artist D" loading="lazy">
+  <div class="ac-meta">
+    <div class="ac-name">artist D</div>
+    <div class="ac-org">
+      <img class="ac-logo" src="https://images.evetech.net/corporations/98185110/logo?size=64" alt="FUXI" loading="lazy">
+      <span class="ac-org-name">Fuxi Legion <span class="mu">[FUXI]</span></span>
+      <span class="ac-divider"></span>
+      <img class="ac-logo" src="https://images.evetech.net/alliances/99003581/logo?size=64" alt="FRT" loading="lazy">
+      <span class="ac-org-name">Fraternity. <span class="mu">[FRT]</span></span>
+    </div>
+  </div>
+  <div class="ac-stamp">
+    <div class="ac-stamp-line">FIELD RECON</div>
+    <div class="ac-stamp-line">CN · WC · AAR</div>
+    <div class="ac-stamp-line ac-date">2026·04·28</div>
+  </div>
+</div>
+
+<style>
+  .author-card {
+    margin: 36px 0 18px;
+    padding: 18px 24px;
+    background:
+      linear-gradient(135deg, rgba(255,209,102,.04) 0%, transparent 50%),
+      var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .author-card::before {
+    content: ""; position: absolute; top: 0; left: 24px; right: 24px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,209,102,.4) 50%, transparent);
+  }
+  .ac-portrait {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,209,102,.4);
+    box-shadow:
+      0 0 0 3px var(--bg),
+      0 0 18px rgba(255,209,102,.12);
+    background: var(--bg);
+    display: block;
+    flex-shrink: 0;
+  }
+  .ac-meta { min-width: 0; }
+  .ac-name {
+    font-size: 22px; font-weight: 700; color: var(--text);
+    letter-spacing: .005em; margin-bottom: 8px;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+  }
+  .ac-org {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; color: var(--text);
+    flex-wrap: wrap;
+  }
+  .ac-org-name { letter-spacing: .005em; }
+  .ac-org-name .mu {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 11px; letter-spacing: .06em;
+    color: var(--muted); margin-left: 3px;
+  }
+  .ac-logo {
+    width: 22px; height: 22px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    flex-shrink: 0;
+  }
+  .ac-divider {
+    width: 1px; height: 18px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .ac-stamp {
+    text-align: right;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+    font-size: 10.5px; letter-spacing: .18em;
+    color: var(--muted);
+    line-height: 1.85;
+    padding-left: 16px;
+    border-left: 1px solid var(--border);
+  }
+  .ac-stamp-line:first-child {
+    color: var(--gold); font-weight: 700;
+  }
+  .ac-stamp .ac-date {
+    color: var(--text); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+  @media (max-width: 720px) {
+    .author-card {
+      grid-template-columns: 64px 1fr;
+      grid-template-rows: auto auto;
+      gap: 14px 16px;
+    }
+    .ac-portrait { width: 64px; height: 64px; }
+    .ac-stamp {
+      grid-column: 1 / 3;
+      text-align: center;
+      padding-left: 0;
+      padding-top: 12px;
+      border-left: none;
+      border-top: 1px solid var(--border);
+    }
+    .ac-name { font-size: 18px; }
+    .ac-divider { display: none; }
+  }
+</style>
+
+<footer>
+  数据源:<a href="https://warbeacon.net/br/report/e8c7c91f-4530-4e9b-ad07-d0b786990a87" target="_blank" rel="noopener">WarBeacon 战报</a> · zKillboard ESI fits · WC Doctrine 知识库(auth.wintercoalition.space mirror) · FRT CN Discord(#strat-战略起队 / #bulletin-公告栏 / #skirmish-散打起队 实时拉取) · 地名保持 TQ 英文原名 · 舰船中文名仅作阅读辅助,统计以 TQ type_id 为准 · 时间统一北京时间 (BJT/UTC+8) · 本简报仅供军团内部流通 · 生成时间 2026-04-29 03:00 BJT。
+</footer>
+
+</div>
+
+<script>
+(function () {
+  // === 1. 视差星空 (canvas-based, 极轻量) ===
+  const canvas = document.getElementById('stars');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    const stars = Array.from({length: 90}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random() * 0.5 + 0.15,
+      vx: (Math.random() - 0.5) * 0.04,
+      vy: (Math.random() - 0.5) * 0.04,
+      tw: Math.random() * Math.PI * 2,
+    }));
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      stars.forEach(s => {
+        s.x += s.vx; s.y += s.vy; s.tw += 0.015;
+        if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
+        if (s.y < 0) s.y = H; if (s.y > H) s.y = 0;
+        const a = s.a * (0.7 + 0.3 * Math.sin(s.tw));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(216, 221, 231, ${a})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    window.addEventListener('resize', () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    });
+  }
+
+  // === 2. 标记需要渐入的元素 ===
+  const revealSelectors = [
+    '.tl-dr', '.epitaph', '.card', '.doc-card', '.chart-grid',
+    'blockquote', '.verdict', '.tier-h', 'h2', '.summary-grid > .sum-card',
+    '.tl-row', 'table'
+  ];
+  document.querySelectorAll(revealSelectors.join(',')).forEach(el => {
+    el.classList.add('reveal');
+  });
+
+  // === 3. IntersectionObserver 触发渐入 ===
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // === 4. chart-grid 进入视野时,逐条触发 bar 动画 ===
+  document.querySelectorAll('.chart-grid').forEach(grid => {
+    const rowIO = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          grid.querySelectorAll('.chart-row').forEach((row, idx) => {
+            setTimeout(() => {
+              const f = row.querySelector('.bar-fielded');
+              const l = row.querySelector('.bar-lost');
+              if (f && f.dataset.w) row.style.setProperty('--w-fielded', f.dataset.w);
+              if (l && l.dataset.w) row.style.setProperty('--w-lost', l.dataset.w);
+              row.classList.add('bar-in');
+            }, idx * 80);
+          });
+          rowIO.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    rowIO.observe(grid);
+  });
+
+  // === 5. 顶部滚动进度条 ===
+  const progress = document.getElementById('scrollProgress');
+  if (progress) {
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const h = document.documentElement;
+          const max = h.scrollHeight - h.clientHeight;
+          const ratio = max > 0 ? h.scrollTop / max : 0;
+          progress.style.transform = `scaleX(${ratio})`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  // === 6. 截图 fallback — 3.5s 后强制最终态 ===
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    document.querySelectorAll('.chart-row').forEach(row => {
+      const f = row.querySelector('.bar-fielded');
+      const l = row.querySelector('.bar-lost');
+      if (f && f.dataset.w) row.style.setProperty('--w-fielded', f.dataset.w);
+      if (l && l.dataset.w) row.style.setProperty('--w-lost', l.dataset.w);
+      row.classList.add('bar-in');
+    });
+  }, 3500);
+
+  // === 7. 卡片轻微 3D 跟随鼠标 ===
+  document.querySelectorAll('.card, .doc-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-1px) perspective(800px) rotateX(${-y * 1.5}deg) rotateY(${x * 1.5}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+})();
+</script>
+</body>
+</html>
